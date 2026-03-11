@@ -11,12 +11,13 @@ import ActionButton from "../CommonComponent/ActionButtons";
 import {
   actions as defaultActions,
   actionsfile,
-  additionalDocumentFields,
   decisionFields,
   documentOptions,
   getInitialFormState,
   metaDataFields,
-  MtOptions,
+  categoryOptions,
+  classificationOptions,
+  tagOptions,
 } from "../headerData";
 import DocumentPreview from "../CommonComponent/DocumentPreview";
 import DocumentsSection from "../CommonComponent/DocumentsSection";
@@ -34,7 +35,10 @@ const FBDOpenning = () => {
     date: new Date().toISOString().split("T")[0],
   });
   const optionsMap = {
-    MtOptions: MtOptions,
+    documentOptions: documentOptions,
+    categoryOptions: categoryOptions,
+    classificationOptions: classificationOptions,
+    tagOptions: tagOptions,
   };
   useEffect(() => {
     const dateInputs = document.querySelectorAll('input[type="date"]');
@@ -130,11 +134,7 @@ const FBDOpenning = () => {
     const missingFields = [];
     const newErrors = {};
 
-    const allFields = [
-      ...metaDataFields,
-      ...additionalDocumentFields,
-      ...decisionFields,
-    ];
+    const allFields = [...metaDataFields, ...decisionFields];
 
     allFields.forEach((field) => {
       if (field.required) {
@@ -225,54 +225,16 @@ const FBDOpenning = () => {
   };
 
   const [isSaving, setIsSaving] = useState(false);
-  // const modifiedActions = defaultActions
-  //   .map((action) => {
-  //     if (action.label === "Save" && form.actions?.length > 0) {
-  //       return null;
-  //     }
 
-  //     if (action.label === "Save") {
-  //       return {
-  //         ...action,
-  //         label: isSaving ? "Saving As Draft..." : "Save As Draft",
-  //         icon: isSaving ? null : action.icon,
-  //         disabled: isSaving,
-  //         onClick: () => {
-  //           const validation = validateForm(true);
-  //           if (!validation.isValid) {
-  //             showToast({
-  //               message:
-  //                 "Form saved as draft, but some required fields are missing",
-  //               type: "warning",
-  //               title: "Validation Warning",
-  //               autoClose: 6000,
-  //             });
-  //           }
-  //           submitFormData(true);
-  //         },
-  //       };
-  //     }
-  //     if (action.label === "Scan") {
-  //       return {
-  //         ...action,
-  //         onClick: acquireImage,
-  //       };
-  //     }
-  //     return action;
-  //   })
-  //   .filter(Boolean);
   const modifiedActions = defaultActions
     .map((action) => {
-      // Show Save button only when:
-      // 1. There's NO ID (new form) AND no API actions, OR
-      // 2. When ID exists AND status is "draft"
       if (action.label === "Save") {
         const shouldShowSave =
-          (!id && !form.actions?.length) || // New form without API actions
-          (id && form.status?.toLowerCase() === "draft"); // Existing form with draft status
+          (!id && !form.actions?.length) ||
+          (id && form.status?.toLowerCase() === "draft");
 
         if (!shouldShowSave) {
-          return null; // Hide Save when conditions not met
+          return null;
         }
         return {
           ...action,
@@ -362,69 +324,6 @@ const FBDOpenning = () => {
     setForm(updatedForm);
   };
 
-  // const submitFormData = async (isDraft = false) => {
-  //   try {
-  //     setIsSaving(true);
-
-  //     if (!isDraft) {
-  //       const validation = validateForm(true);
-  //       if (!validation.isValid) {
-  //         showToast({
-  //           message: `Please fill the following required fields: ${validation.missingFields.join(
-  //             ", "
-  //           )}`,
-  //           type: "danger",
-  //           title: "Validation Error",
-  //           autoClose: 6000,
-  //         });
-  //         setIsSaving(false);
-  //         return;
-  //       }
-  //     }
-
-  //     const requestBody = mapFormToRequestBody();
-  //     if (form.entryId || id) {
-  //       requestBody.entryId = form.entryId || id;
-  //     }
-
-  //     const response = await submitAccountOpeningForm(requestBody);
-  //     if (response.data?.entryId && !form.entryId) {
-  //       setForm((prev) => ({
-  //         ...prev,
-  //         entryId: response.data.entryId,
-  //       }));
-  //     }
-
-  //     if (isDraft) {
-  //       showToast({
-  //         message: "Form saved as draft successfully!",
-  //         type: "success",
-  //         title: "Draft Saved",
-  //         autoClose: 3000,
-  //       });
-  //     } else if (response.success) {
-  //       showToast({
-  //         message: response?.customMessage || "Form submitted successfully!",
-  //         type: "success",
-  //         title: "Success",
-  //       });
-  //     }
-
-  //     setForm((prev) => ({
-  //       ...prev,
-  //     }));
-  //   } catch (error) {
-  //     console.error("Submission error:", error);
-  //     showToast({
-  //       message: isDraft ? "Draft save failed!" : "Submission failed!",
-  //       type: "danger",
-  //       title: "Error",
-  //     });
-  //   } finally {
-  //     setIsSaving(false);
-  //   }
-  // };
-
   const submitFormData = async (isDraft = false) => {
     try {
       setIsSaving(true);
@@ -434,7 +333,7 @@ const FBDOpenning = () => {
         if (!validation.isValid) {
           showToast({
             message: `Please fill the following required fields: ${validation.missingFields.join(
-              ", "
+              ", ",
             )}`,
             type: "danger",
             title: "Validation Error",
@@ -518,39 +417,10 @@ const FBDOpenning = () => {
     }
   };
   const [isExporting, setIsExporting] = useState(false);
-  // const modifiedFileActions = actionsfile.map((action) => {
-  //   if (action.label === "Export" && form.actions?.length > 0) {
-  //     const apiAction = form.actions[0];
-  //     return {
-  //       ...action,
-  //       label: apiAction.actionName,
-  //       className: "btn btn-save mt-2",
-  //       disabled: !form.entryId && !id,
-  //       onClick: () => {
-  //         if (!validateForm()) return;
-  //         exportFormData(apiAction.transitionId, apiAction.workflowTaskId);
-  //       },
-  //     };
-  //   }
 
-  //   if (action.label === "Export") {
-  //     return {
-  //       ...action,
-  //       label: isExporting ? "Submitting..." : "Submit",
-  //       icon: isExporting ? null : action.icon,
-  //       disabled: isExporting || (!form.entryId && !id),
-  //       onClick: () => {
-  //         if (!validateForm()) return;
-  //         exportFormData();
-  //       },
-  //     };
-  //   }
-  //   return action;
-  // });
   const modifiedFileActions = actionsfile
     .map((action) => {
       if (action.label === "Export") {
-        // Show API action button when actions exist from API and actionName is present
         if (form.actions?.length > 0 && form.actions[0]?.actionName) {
           const apiAction = form.actions[0];
           return {
@@ -563,12 +433,7 @@ const FBDOpenning = () => {
               exportFormData(apiAction.transitionId, apiAction.workflowTaskId);
             },
           };
-        }
-        // Show regular Export/Submit button when:
-        // 1. No ID (new form) OR
-        // 2. When API actions exist but no actionName OR
-        // 3. When ID exists AND status is "draft"
-        else if (
+        } else if (
           !id ||
           (form.actions?.length > 0 && !form.actions[0]?.actionName) ||
           (id && form.status?.toLowerCase() === "draft")
@@ -583,83 +448,16 @@ const FBDOpenning = () => {
               exportFormData();
             },
           };
-        }
-        // Hide Export button when ID exists but no valid API actions and status is not draft
-        else {
+        } else {
           return null;
         }
       }
       return action;
     })
     .filter(Boolean);
-  // const filteredActions =
-  //   form.actions?.length > 0
-  //     ? modifiedActions.filter((action) => action.label !== "Save")
-  //     : modifiedActions;
+
   const filteredActions = modifiedActions.filter((action) => action !== null);
-  // const exportFormData = async (transitionId, workflowTaskId) => {
-  //   try {
-  //     const validation = validateForm(true);
 
-  //     if (!validation.isValid) {
-  //       showToast({
-  //         message: `Please fill the following required fields: ${validation.missingFields.join(
-  //           ", "
-  //         )}`,
-  //         type: "danger",
-  //         title: "Validation Error",
-  //         autoClose: 6000,
-  //       });
-  //       setIsExporting(false);
-  //       return;
-  //     }
-
-  //     setIsExporting(true);
-  //     const entryIdToUse = form.entryId || id;
-
-  //     const requestBody = mapFormToRequestBody();
-  //     requestBody.entryId = entryIdToUse;
-
-  //     if (transitionId && workflowTaskId) {
-  //       requestBody.transitionId = transitionId;
-  //       requestBody.workflowTaskId = workflowTaskId;
-  //     }
-
-  //     if (form.urn) {
-  //       requestBody.urn = form.urn;
-  //     }
-
-  //     const response = await exportAccountOpeningForm(requestBody);
-
-  //     if (response) {
-  //       showToast({
-  //         message: "Document exported successfully!",
-  //         type: "success",
-  //         title: "Success",
-  //       });
-
-  //       if (response instanceof Blob) {
-  //         const url = window.URL.createObjectURL(response);
-  //         const a = document.createElement("a");
-  //         a.href = url;
-  //         a.download = "exported-document.pdf";
-  //         document.body.appendChild(a);
-  //         a.click();
-  //         window.URL.revokeObjectURL(url);
-  //         document.body.removeChild(a);
-  //       }
-  //       window.location.href = `/web/boi-dms/fbd-table`;
-  //     }
-  //   } catch (error) {
-  //     showToast({
-  //       message: "Export failed! " + (error.message || ""),
-  //       type: "danger",
-  //       title: "Error",
-  //     });
-  //   } finally {
-  //     setIsExporting(false);
-  //   }
-  // };
   const exportFormData = async (transitionId, workflowTaskId) => {
     try {
       const validation = validateForm(true);
@@ -667,7 +465,7 @@ const FBDOpenning = () => {
       if (!validation.isValid) {
         showToast({
           message: `Please fill the following required fields: ${validation.missingFields.join(
-            ", "
+            ", ",
           )}`,
           type: "danger",
           title: "Validation Error",
@@ -694,7 +492,6 @@ const FBDOpenning = () => {
 
       const response = await exportAccountOpeningForm(requestBody);
 
-      // Check for file size limit error
       if (
         response &&
         response.responseId === 406 &&
@@ -755,14 +552,14 @@ const FBDOpenning = () => {
   };
   return (
     <section className="main-section p-4">
-      <h1>FBD Opening</h1>
+      <h1>My Space</h1>
       <div className="shadowBox scrollHeight">
         <div className="row">
           {/* Left Panel */}
-          <div className="col-md-7">
+          <div className="col-md-4">
             <div className="row">
               {/* Meta Data */}
-              <div className="col-md-6">
+              <div className="col-md-12">
                 <div className="metaData">
                   <h2>Meta Data</h2>
                   {(isSaving || isExporting) && (
@@ -812,70 +609,23 @@ const FBDOpenning = () => {
                     <div className="formData ">
                       {metaDataFields.map((field) => (
                         <div className="form-group mt-3" key={field.name}>
-                          <TextInput
-                            label={field.label}
-                            name={field.name}
-                            value={form[field.name] || ""}
-                            onChange={handleChange}
-                            required={field.required}
-                            type={field.type}
-                            maxLength={field.maxLength}
-                            error={errors[field.name]}
-                            readOnly={field.readOnly}
-                            pattern={field.pattern}
-                            errorMessage={field.errorMessage}
-                          />
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Additional Documents */}
-                    <div className="mt-4">
-                      {/* <h2>Additional Documents</h2> */}
-                      <div className="formData ">
-                        {additionalDocumentFields.map((field) => (
-                          <div className="form-group mt-3" key={field.name}>
-                            {field.type === "select" ? (
-                              <SelectInput
-                                label={field.label}
-                                name={field.name}
-                                value={
-                                  field.name.includes(".")
-                                    ? form?.[field.name.split(".")[0]]?.[
-                                        field.name.split(".")[1]
-                                      ] || ""
-                                    : form?.[field.name] || ""
-                                }
-                                options={optionsMap[field.optionsKey] || []}
-                                onChange={handleChange}
-                                required={field.required}
-                                error={errors[field.name]}
-                              />
-                            ) : (
-                              <TextInput
-                                label={field.label}
-                                name={field.name}
-                                value={form[field.name] || ""}
-                                onChange={handleChange}
-                                required={field.required}
-                                type={field.type}
-                                maxLength={field.maxLength}
-                                error={errors[field.name]}
-                                pattern={field.pattern}
-                                errorMessage={field.errorMessage}
-                              />
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Decision */}
-                    {/* <div className="mt-4">
-                      <h2>Decision</h2>
-                      <div className="formData ">
-                        {decisionFields.map((field) => (
-                          <div className="form-group mt-3" key={field.name}>
+                          {field.type === "select" ? (
+                            <SelectInput
+                              label={field.label}
+                              name={field.name}
+                              value={
+                                field.name.includes(".")
+                                  ? form?.[field.name.split(".")[0]]?.[
+                                      field.name.split(".")[1]
+                                    ] || ""
+                                  : form?.[field.name] || ""
+                              }
+                              options={optionsMap[field.optionsKey] || []}
+                              onChange={handleChange}
+                              required={field.required}
+                              error={errors[field.name]}
+                            />
+                          ) : (
                             <TextInput
                               label={field.label}
                               name={field.name}
@@ -888,15 +638,15 @@ const FBDOpenning = () => {
                               pattern={field.pattern}
                               errorMessage={field.errorMessage}
                             />
-                          </div>
-                        ))}
-                      </div>
-                    </div> */}
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <DocumentsSection form={form} handleChange={handleChange} />
+              {/* <DocumentsSection form={form} handleChange={handleChange} /> */}
             </div>
             <div className="btnWrapper">
               <ul className="pl-0 ml-0 d-flex align-items-center justify-content-between">

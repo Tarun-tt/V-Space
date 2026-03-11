@@ -5,10 +5,13 @@ import TextInput from "../CommonComponent/TextInput";
 import {
   formatDateForInput,
   metaDataFields,
-  additionalDocumentFields,
   decisionFields,
   docmetaDataFields,
   MtOptions,
+  documentOptions,
+  categoryOptions,
+  classificationOptions,
+  tagOptions,
 } from "../headerData";
 import { getRequestAccountDetails, requestAccountPre } from "../apiService";
 import showToast from "../CommonComponent/ToastMessage";
@@ -54,7 +57,10 @@ const FbdDetail = () => {
   });
 
   const optionsMap = {
-    MtOptions: MtOptions,
+    documentOptions: documentOptions,
+    categoryOptions: categoryOptions,
+    classificationOptions: classificationOptions,
+    tagOptions: tagOptions,
   };
 
   const parseFileData = useCallback((fileString) => {
@@ -88,7 +94,7 @@ const FbdDetail = () => {
         return updatedData;
       });
     },
-    [isReadOnly, isFormDirty]
+    [isReadOnly, isFormDirty],
   );
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -155,7 +161,7 @@ const FbdDetail = () => {
       return {
         isValid: false,
         message: `.${fileExtension} files are not allowed. Only ${ALLOWED_FILE_TYPES.join(
-          ", "
+          ", ",
         )} are accepted`,
       };
     }
@@ -246,17 +252,17 @@ const FbdDetail = () => {
       // Append document details
       formDataToSend.append(
         "documentDetailedFrom",
-        formData.metaData.documentDetailedFrom || ""
+        formData.metaData.documentDetailedFrom || "",
       );
       formDataToSend.append(
         "documentDetailedTo",
-        formData.metaData.documentDetailedTo || ""
+        formData.metaData.documentDetailedTo || "",
       ); // Append document files if they exist
       if (formData.documents?.documentDetailedFile?.file) {
         formDataToSend.append(
           "documentFile",
           formData.documents.documentDetailedFile.file,
-          formData.documents.documentDetailedFile.fileName
+          formData.documents.documentDetailedFile.fileName,
         );
       }
       formDataToSend.append("entryId", formData.metaData.entryId || "");
@@ -277,7 +283,7 @@ const FbdDetail = () => {
           method: "POST",
           headers: headers,
           body: formDataToSend,
-        }
+        },
       );
 
       let result;
@@ -290,7 +296,7 @@ const FbdDetail = () => {
 
       if (!response.ok) {
         throw new Error(
-          typeof result === "string" ? result : "Submission failed"
+          typeof result === "string" ? result : "Submission failed",
         );
       }
 
@@ -347,7 +353,7 @@ const FbdDetail = () => {
                 id: action.transitionId,
                 taskId: action.workflowTaskId,
                 name: action.actionName.trim(),
-              }))
+              })),
             );
             setIsReadOnly(false);
           }
@@ -657,7 +663,7 @@ const FbdDetail = () => {
                           handleChange(
                             "metaData",
                             "documentDetailedTo",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         readOnly={true}
@@ -676,7 +682,7 @@ const FbdDetail = () => {
                           handleChange(
                             "metaData",
                             "documentDetailedFrom",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         readOnly={true}
@@ -840,53 +846,6 @@ const FbdDetail = () => {
                     </div>
                   </div>
 
-                  {/* Additional Documents Section */}
-                  <div className="col-md-12 mt-4">
-                    <div className="bgLightBlue">
-                      <h2>Additional Documents</h2>
-                      <div className="bgWhite">
-                        <div className="row">
-                          {additionalDocumentFields.map((field, index) => (
-                            <div
-                              className="col-md-4"
-                              key={field.name}
-                              style={{
-                                marginBottom: index % 3 === 2 ? "10px" : "0",
-                                marginTop: index >= 3 ? "10px" : "0",
-                              }}
-                            >
-                              {renderFormField(field, "additionalDocuments")}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Decision Section */}
-                  {/* <div className="col-md-12 mt-4">
-                    <div className="bgLightBlue">
-                      <h2>Decision</h2>
-                      <div className="bgWhite">
-                        <div className="row">
-                          {decisionFields.map((field, index) => (
-                            <div
-                              className="col-md-4"
-                              key={field.name}
-                              style={{
-                                marginBottom: index % 3 === 2 ? "10px" : "0",
-                                marginTop: index >= 3 ? "10px" : "0",
-                              }}
-                            >
-                              {renderFormField(field, "decision")}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div> */}
-
-                  {/* Document File Section */}
                   {renderDocumentFields()}
 
                   {/* Logs Table */}
@@ -983,7 +942,7 @@ const FbdDetail = () => {
                                       type="date"
                                       className="form-control"
                                       value={formatDateForInput(
-                                        log.dateCreated
+                                        log.dateCreated,
                                       )}
                                       disabled
                                     />
@@ -1015,7 +974,7 @@ const FbdDetail = () => {
                                   onChange={(e) => {
                                     const isValid =
                                       /^[a-zA-Z0-9\s.,!?()-]*$/.test(
-                                        e.target.value
+                                        e.target.value,
                                       );
                                     if (isValid || e.target.value === "") {
                                       setApprovalRemarks(e.target.value);
@@ -1024,7 +983,7 @@ const FbdDetail = () => {
                                   onBlur={(e) => {
                                     if (
                                       !/^[a-zA-Z0-9\s.,!?()-]*$/.test(
-                                        e.target.value
+                                        e.target.value,
                                       )
                                     ) {
                                       showToast({
@@ -1062,10 +1021,10 @@ const FbdDetail = () => {
                                     onDrop={(e) => {
                                       e.preventDefault();
                                       const files = Array.from(
-                                        e.dataTransfer.files
+                                        e.dataTransfer.files,
                                       );
                                       const validFiles = files.filter(
-                                        (file) => validateFile(file).isValid
+                                        (file) => validateFile(file).isValid,
                                       );
                                       if (validFiles.length > 0) {
                                         setAttachedFiles((prev) => [

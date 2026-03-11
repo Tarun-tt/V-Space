@@ -1,20 +1,27 @@
 export const documentOptions = [
   { label: "Select", value: "" },
-  { label: "Aadhar Card", value: "Aadhar Card" },
-  { label: "Pan Card", value: "Pan Card" },
-  { label: "Voter Card", value: "Voter Card" },
+  { label: "Technical Document", value: "Technical Document" },
+  { label: "Information Management", value: "Information Management" },
+  { label: "Consumer", value: "Consumer" },
 ];
 
-export const genderOptions = [
+export const categoryOptions = [
   { label: "Select Gender", value: "" },
-  { label: "Male", value: "Male" },
-  { label: "Female", value: "Female" },
+  { label: "CAT 1", value: "CAT 1" },
+  { label: "CAT 2", value: "CAT 2" },
+  { label: "CAT 3", value: "CAT 3" },
 ];
 
-export const MtOptions = [
+export const classificationOptions = [
   { label: "Select", value: "" },
-  { label: "MT103", value: "MT103" },
-  { label: "MT202", value: "MT202" },
+  { label: "Private", value: "Private" },
+  { label: "Public", value: "Public" },
+];
+export const tagOptions = [
+  { label: "Select", value: "" },
+  { label: "TAG 1", value: "TAG 1" },
+  { label: "TAG 2", value: "TAG 2" },
+  { label: "TAG 3", value: "TAG 3" },
 ];
 
 export const actions = [
@@ -117,59 +124,58 @@ export const formatDateForInput = (isoDateString) => {
   }
 };
 
-////////////////////////////////////////////////////////////////////////////FBD start
 export const metaDataFields = [
   {
-    label: "Date",
-    name: "date",
-    type: "date",
-    required: true,
-    maxLength: 30,
-    readOnly: true,
-    value: new Date().toISOString().split("T")[0],
-  },
-  {
-    label: "NBG Name",
-    name: "nbgCode",
+    label: "File Name",
+    name: "fileName",
     type: "text",
     required: true,
     maxLength: 50,
     readOnly: true,
   },
   {
-    label: "Zone",
-    name: "zone",
+    label: "File Title",
+    name: "fileTitle",
     type: "text",
     required: true,
     maxLength: 50,
     readOnly: true,
   },
   {
-    label: "Branch",
-    name: "branchCode",
-    type: "text",
-    required: true,
-    maxLength: 50,
-    readOnly: true,
-  },
-];
-
-export const additionalDocumentFields = [
-  {
-    label: "Finacle Reference No",
-    name: "finacleReferenceNo",
-    type: "text",
-    required: true,
-    maxLength: 50,
-    pattern: "^[a-zA-Z0-9 ]*$",
-    errorMessage: "Special characters are not allowed",
-  },
-  {
-    label: "MT Type",
-    name: "mtType",
+    label: "Document Type",
+    name: "docType",
     type: "select",
     required: true,
-    optionsKey: "MtOptions",
+    optionsKey: "documentOptions",
+  },
+  {
+    label: "Category",
+    name: "cateType",
+    type: "select",
+    required: true,
+    optionsKey: "categoryOptions",
+  },
+  {
+    label: "Classification",
+    name: "classType",
+    type: "select",
+    required: true,
+    optionsKey: "classificationOptions",
+  },
+  {
+    label: "Tags",
+    name: "tagsType",
+    type: "select",
+    required: true,
+    optionsKey: "tagOptions",
+  },
+  {
+    label: "Keyword",
+    name: "keyword",
+    type: "text",
+    required: true,
+    maxLength: 50,
+    readOnly: true,
   },
 ];
 
@@ -185,11 +191,7 @@ export const decisionFields = [
   },
 ];
 
-export const allFields = [
-  ...metaDataFields,
-  ...additionalDocumentFields,
-  ...decisionFields,
-];
+export const allFields = [...metaDataFields, ...decisionFields];
 
 export const getInitialFormState = () => {
   const formState = {};

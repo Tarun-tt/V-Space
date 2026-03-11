@@ -3,7 +3,7 @@ import ActionButton from "./ActionButtons";
 
 const DocumentPreview = ({ isScanModalOpen, closeScanModal, actionsfile }) => {
   return (
-    <div className="col-md-5 pl-0">
+    <div className="col-md-8 pl-0">
       <div className="docPreview">
         {/* <h2>Customer 1 documents Preview</h2> */}
         <div className="docImg scroll-on-hover">
