@@ -23,11 +23,14 @@ import DocumentPreview from "../CommonComponent/DocumentPreview";
 import DocumentsSection from "../CommonComponent/DocumentsSection";
 import showToast from "../CommonComponent/ToastMessage";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 /* global importFromHDD */
+
 /* global uploadFileToDMS */
-const FBDOpenning = () => {
+const MySpaceForm = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [isDirty, setIsDirty] = useState(false);
   const initialFormState = useRef(getInitialFormState());
   const [form, setForm] = useState({
@@ -50,6 +53,40 @@ const FBDOpenning = () => {
   }, []);
   const [errors, setErrors] = useState({});
 
+  // useEffect(() => {
+  //   const initializeForm = async () => {
+  //     if (id) {
+  //       try {
+  //         const response = await getRequestAccountDetails(id);
+  //         if (response.data) {
+  //           populateFormFromResponse(response);
+  //           if (typeof window.integrateFile === "function") {
+  //             window.integrateFile(response);
+  //           } else {
+  //             console.warn("window.integrateFile is not defined");
+  //           }
+  //         }
+  //       } catch (error) {
+  //         console.error("Error fetching on page load:", error);
+  //       }
+  //     } else {
+  //       try {
+  //         const response = await requestAccountPre();
+  //         setForm((prev) => ({
+  //           ...getInitialFormState(),
+  //           date: new Date().toISOString().split("T")[0],
+  //           nbgCode: response.nbgCode || "",
+  //           zone: response.zoneName || "",
+  //           branchCode: response.branch || "",
+  //         }));
+  //       } catch (error) {
+  //         console.error("Error in requestAccountPre:", error);
+  //       }
+  //     }
+  //   };
+
+  //   initializeForm();
+  // }, [id]);
   useEffect(() => {
     const initializeForm = async () => {
       if (id) {
@@ -67,18 +104,11 @@ const FBDOpenning = () => {
           console.error("Error fetching on page load:", error);
         }
       } else {
-        try {
-          const response = await requestAccountPre();
-          setForm((prev) => ({
-            ...getInitialFormState(),
-            date: new Date().toISOString().split("T")[0],
-            nbgCode: response.nbgCode || "",
-            zone: response.zoneName || "",
-            branchCode: response.branch || "",
-          }));
-        } catch (error) {
-          console.error("Error in requestAccountPre:", error);
-        }
+        // No ID provided - just use initial form state
+        setForm((prev) => ({
+          ...getInitialFormState(),
+          date: new Date().toISOString().split("T")[0],
+        }));
       }
     };
 
@@ -552,7 +582,20 @@ const FBDOpenning = () => {
   };
   return (
     <section className="main-section p-4">
-      <h1>My Space</h1>
+      <div className="d-flex justify-content-between mb-2">
+        <h1>My Space</h1>
+        <button
+          className="btn btn-outline"
+          style={{
+            backgroundColor: "#0066B3",
+            color: "white",
+            borderColor: "#0066B3",
+          }}
+          onClick={() => navigate("/myspace")}
+        >
+          BACK
+        </button>
+      </div>
       <div className="shadowBox scrollHeight">
         <div className="row">
           {/* Left Panel */}
@@ -670,4 +713,4 @@ const FBDOpenning = () => {
   );
 };
 
-export default FBDOpenning;
+export default MySpaceForm;
