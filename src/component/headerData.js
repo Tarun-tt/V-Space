@@ -6,7 +6,7 @@ export const documentOptions = [
 ];
 
 export const categoryOptions = [
-  { label: "Select Gender", value: "" },
+  { label: "Select", value: "" },
   { label: "CAT 1", value: "CAT 1" },
   { label: "CAT 2", value: "CAT 2" },
   { label: "CAT 3", value: "CAT 3" },
@@ -46,8 +46,9 @@ export const actions = [
 
   {
     type: "button",
-    label: "Save",
+    label: "Submit",
     disabled: false,
+    // className: "btn btn-success mt-2",
     className: "btn btn-save mt-2",
   },
 ];
@@ -77,13 +78,8 @@ export const actionsfile = [
       window.deleteCurrent?.();
     },
   },
-  {
-    type: "button",
-    label: "Export",
-    className: "btn btn-save mt-2",
-    disabled: false,
-  },
 ];
+
 export const formatDateForInput = (isoDateString) => {
   if (!isoDateString) return "";
 
@@ -131,7 +127,6 @@ export const metaDataFields = [
     type: "text",
     required: true,
     maxLength: 50,
-    readOnly: true,
   },
   {
     label: "File Title",
@@ -139,7 +134,6 @@ export const metaDataFields = [
     type: "text",
     required: true,
     maxLength: 50,
-    readOnly: true,
   },
   {
     label: "Document Type",
@@ -175,7 +169,6 @@ export const metaDataFields = [
     type: "text",
     required: true,
     maxLength: 50,
-    readOnly: true,
   },
 ];
 
@@ -210,13 +203,3 @@ export const getInitialFormState = () => {
 
   return formState;
 };
-
-export const docmetaDataFields = [
-  {
-    id: "documentDetailedFile",
-    name: "Document",
-    fromField: "documentDetailedFrom",
-    toField: "documentDetailedTo",
-    file: "documentDetailedFile",
-  },
-];
