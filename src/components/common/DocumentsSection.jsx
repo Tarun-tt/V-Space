@@ -5,7 +5,6 @@ import Radio from "@mui/material/Radio";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import CustomTextField from "./CustomTextField";
 import { docmetaDataFields } from "../../pages/VDMS/headerData";
-import { boiBorder } from "../../theme/theme";
 
 const DocumentsSection = ({ form, handleChange }) => {
   const docMetaRefs = useRef({});
@@ -48,24 +47,19 @@ const DocumentsSection = ({ form, handleChange }) => {
   }, [form]);
 
   return (
-    <Box sx={{ width: "100%", maxWidth: { md: "50%" }, pl: 0 }}>
-      <Box sx={{ p: 2, border: `1px solid ${boiBorder}`, borderRadius: "10px", bgcolor: "#fff" }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+    <Box className="col-md-6 pl-0">
+      <Box className="docSec">
+        <Typography component="h2" variant="h6">
           Documents Type
         </Typography>
-        <Box sx={{ maxHeight: 400, overflowY: "auto" }}>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box className="docScroll scroll-on-hover">
+          <Box className="formData">
             {docmetaDataFields.map((field, index) => (
               <Box
+                className={`formBox ${index === 0 ? "active" : ""}`}
                 key={field.id}
-                sx={{
-                  p: 2,
-                  border: `1px solid ${index === 0 ? "primary.main" : boiBorder}`,
-                  borderRadius: "8px",
-                  bgcolor: index === 0 ? "rgba(0, 114, 206, 0.04)" : "background.paper",
-                }}
               >
-                <Box sx={{ mb: 1 }}>
+                <Box className="form-check mb-3">
                   <FormControlLabel
                     control={
                       <Radio
@@ -73,43 +67,68 @@ const DocumentsSection = ({ form, handleChange }) => {
                         defaultChecked={index === 0}
                         id={`${field.id}-${index}`}
                         size="small"
+                        className="form-check-input"
+                        sx={{ "&.Mui-checked": { color: "#f54220" } }}
                       />
                     }
-                    label={<Typography sx={{ fontSize: 14, fontWeight: 500 }}>{field.name}</Typography>}
+                    label={
+                      <Typography component="span" sx={{ fontSize: 14 }}>
+                        {field.name}
+                      </Typography>
+                    }
+                    className="form-check-label"
                   />
                 </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Typography sx={{ minWidth: "60px", fontSize: 13, color: "text.secondary" }}>
-                    Pages:
-                  </Typography>
-                  <Box sx={{ display: "flex", flexGrow: 1, gap: 1 }}>
-                    <CustomTextField
-                      id={field.toField}
-                      name={field.toField}
-                      value={form[field.toField] || ""}
-                      onChange={handleChange}
-                      disabled
-                      size="small"
-                    />
-                    <CustomTextField
-                      id={field.fromField}
-                      name={field.fromField}
-                      value={form[field.fromField] || ""}
-                      onChange={handleChange}
-                      disabled
-                      size="small"
-                    />
-                    <Box
-                      component="input"
-                      type="file"
-                      id={field.id}
-                      name={field.file}
-                      sx={{ display: "none" }}
-                      onChange={handleChange}
-                      ref={(el) => {
-                        docMetaRefs.current[field.file] = el;
-                      }}
-                    />
+                <Box className="form-group">
+                  <Box className="d-flex align-items-center inlineInput">
+                    <Box className="label mr-2" sx={{ minWidth: "60px" }}>
+                      Pages:
+                    </Box>
+                    <Box className="d-flex flex-grow-1 gap-2">
+                      <CustomTextField
+                        id={field.toField}
+                        name={field.toField}
+                        value={form[field.toField] || ""}
+                        onChange={handleChange}
+                        readOnly
+                        size="small"
+                        sx={{
+                          flex: 1,
+                          minWidth: 0,
+                          "& .MuiOutlinedInput-root": { height: 30 },
+                        }}
+                        inputRef={(el) => {
+                          docMetaRefs.current[field.toField] = el;
+                        }}
+                      />
+                      <CustomTextField
+                        id={field.fromField}
+                        name={field.fromField}
+                        value={form[field.fromField] || ""}
+                        onChange={handleChange}
+                        readOnly
+                        size="small"
+                        sx={{
+                          flex: 1,
+                          minWidth: 0,
+                          "& .MuiOutlinedInput-root": { height: 30 },
+                        }}
+                        inputRef={(el) => {
+                          docMetaRefs.current[field.fromField] = el;
+                        }}
+                      />
+                      <Box
+                        component="input"
+                        type="file"
+                        id={field.id}
+                        name={field.file}
+                        sx={{ display: "none" }}
+                        onChange={handleChange}
+                        ref={(el) => {
+                          docMetaRefs.current[field.file] = el;
+                        }}
+                      />
+                    </Box>
                   </Box>
                 </Box>
               </Box>
@@ -122,4 +141,3 @@ const DocumentsSection = ({ form, handleChange }) => {
 };
 
 export default DocumentsSection;
-

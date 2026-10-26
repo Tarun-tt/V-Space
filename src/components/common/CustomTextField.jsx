@@ -24,7 +24,7 @@ import dayjs from "dayjs";
 
 const soft = {
   "& .MuiOutlinedInput-root": {
-    bgcolor: boiInputSoftBg,
+    // bgcolor: boiInputSoftBg,
     borderRadius: "10px",
     "& fieldset": { borderColor: boiBorder },
   },
@@ -140,7 +140,7 @@ function CustomDateField({
 
 export function CustomTextField({
   cellVariant,
-  size = "small",
+  size = "large",
   fullWidth = true,
   sx,
   InputLabelProps,

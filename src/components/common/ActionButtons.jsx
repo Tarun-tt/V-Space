@@ -21,7 +21,7 @@ const ActionButton = ({
   style = {},
   variant = "contained",
   color = "primary",
-  size = "small",
+  size = "large",
   ...rest
 }) => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -44,7 +44,7 @@ const ActionButton = ({
           setIsLocalLoading(true);
           showLoading(
             loadingText || `Processing ${label || "request"}...`,
-            "Please wait while we complete this action"
+            "Please wait while we complete this action",
           );
           await result;
         }
@@ -63,7 +63,8 @@ const ActionButton = ({
 
   const handleMenuItemClick = async (item, idx) => {
     handleClose();
-    const handler = typeof item?.onClick === "function" ? item.onClick : onClick;
+    const handler =
+      typeof item?.onClick === "function" ? item.onClick : onClick;
     if (typeof handler === "function") {
       try {
         const itemLabel = typeof item === "object" ? item.label : item;
@@ -72,7 +73,7 @@ const ActionButton = ({
           setIsLocalLoading(true);
           showLoading(
             `Processing ${itemLabel || label || "request"}...`,
-            "Please wait while we complete this action"
+            "Please wait while we complete this action",
           );
           await result;
         }
@@ -96,7 +97,7 @@ const ActionButton = ({
   if (type === "link") {
     return (
       <Button
-        variant="text"
+        variant="contained"
         title={title || label}
         onClick={handleClick}
         disabled={isBusy}
@@ -105,7 +106,12 @@ const ActionButton = ({
         sx={{
           textTransform: "none",
           fontWeight: 600,
-          color: boiBlue,
+          borderRadius: "8px",
+          color: "#fff",
+          bgcolor: boiBlue,
+          "&:hover": {
+            bgcolor: "#00508c",
+          },
           ...style,
         }}
         startIcon={startIcon}

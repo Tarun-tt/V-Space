@@ -25,18 +25,18 @@ export default defineConfig(({ command, mode }) => {
         ? undefined
         : {
             entry: path.resolve(__dirname, "src/main.jsx"),
-            name: "BOIComplaint",
+            name: "Vdms",
             formats: ["es", "umd"],
-            fileName: (format) => `boi-complaint.${format}.js`,
+            fileName: (format) => `vdms.${format}.js`,
           },
       rollupOptions: isDev
         ? {}
         : {
             output: {
               assetFileNames: (assetInfo) => {
-                if (!assetInfo.name) return "boi-complaint.css";
+                if (!assetInfo.name) return "vdms.css";
                 if (assetInfo.name === "style.css") {
-                  return "boi-complaint.css";
+                  return "vdms.css";
                 }
                 return assetInfo.name;
               },

@@ -33,7 +33,7 @@ export const actions = [
         window.setScanModalOpen(true);
       }
     },
-    className: "btn btn-primary mt-2",
+    className: "btn btn-primary",
   },
   {
     type: "link",
@@ -41,7 +41,7 @@ export const actions = [
     onClick: () => {
       window.importFromHDD?.();
     },
-    className: "btn btn-primary mt-2",
+    className: "btn btn-primary",
   },
 
   {
@@ -49,7 +49,7 @@ export const actions = [
     label: "Submit",
     disabled: false,
     // className: "btn btn-success mt-2",
-    className: "btn btn-save mt-2",
+    className: "btn btn-save",
   },
 ];
 
@@ -57,7 +57,7 @@ export const actionsfile = [
   {
     type: "button",
     label: "Insert After",
-    className: "btn btn-primary mt-2",
+    className: "btn btn-primary ",
     onClick: () => {
       window.insertAfter?.();
     },
@@ -65,7 +65,7 @@ export const actionsfile = [
   {
     type: "button",
     label: "Insert Before",
-    className: "btn btn-primary mt-2",
+    className: "btn btn-primary",
     onClick: () => {
       window.insertBefore?.();
     },
@@ -73,7 +73,7 @@ export const actionsfile = [
   {
     type: "button",
     label: "Delete Page",
-    className: "btn btn-primary mt-2",
+    className: "btn btn-primary",
     onClick: () => {
       window.deleteCurrent?.();
     },

@@ -7,7 +7,13 @@ import { CustomTextField } from "./CustomTextField";
 const RequiredAsterisk = () => (
   <Typography
     component={Box}
-    sx={{ color: "error.main", fontSize: "1.2rem", lineHeight: 1, ml: 0.5, display: "inline" }}
+    sx={{
+      color: "error.main",
+      fontSize: "1.2rem",
+      lineHeight: 1,
+      ml: 0.5,
+      display: "inline",
+    }}
   >
     *
   </Typography>
@@ -31,14 +37,22 @@ export function CustomAutocomplete({
   ...rest
 }) {
   const normalizedOptions = options.map((opt) =>
-    typeof opt === "object" && opt !== null ? opt : { label: String(opt), value: opt }
+    typeof opt === "object" && opt !== null
+      ? opt
+      : { label: String(opt), value: opt },
   );
 
   const selectedOption =
-    normalizedOptions.find((opt) => opt.value === value || opt.label === value) || null;
+    normalizedOptions.find(
+      (opt) => opt.value === value || opt.label === value,
+    ) || null;
 
   const handleChange = (event, newValue) => {
-    const finalValue = newValue ? (typeof newValue === "object" ? newValue.value : newValue) : "";
+    const finalValue = newValue
+      ? typeof newValue === "object"
+        ? newValue.value
+        : newValue
+      : "";
     if (onChange) {
       onChange({ target: { name, value: finalValue } }, newValue);
     }
@@ -49,9 +63,13 @@ export function CustomAutocomplete({
       disabled={disabled || readOnly}
       readOnly={readOnly}
       options={normalizedOptions}
-      getOptionLabel={(opt) => (typeof opt === "object" ? opt.label || "" : String(opt))}
+      getOptionLabel={(opt) =>
+        typeof opt === "object" ? opt.label || "" : String(opt)
+      }
       isOptionEqualToValue={(option, val) =>
-        typeof val === "object" ? option.value === val.value : option.value === val
+        typeof val === "object"
+          ? option.value === val.value
+          : option.value === val
       }
       value={selectedOption}
       onChange={handleChange}
@@ -69,7 +87,7 @@ export function CustomAutocomplete({
           error={error}
           placeholder={placeholder}
           helperText={helperText}
-          size="small"
+          size="large"
           sx={{
             ...textFieldSx,
             "& .MuiOutlinedInput-root": { borderRadius: "10px" },

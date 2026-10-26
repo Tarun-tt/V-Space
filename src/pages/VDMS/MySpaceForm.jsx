@@ -28,7 +28,7 @@ import {
 import DocumentPreview from "../../components/common/DocumentPreview";
 import { ToastContext } from "../../components/common/ToastContext";
 import { LoadingContext } from "../../components/common/LoadingContext";
-import { boiBlue, boiBorder } from "../../theme/theme";
+import { boiBlue } from "../../theme/theme";
 
 const MySpaceForm = () => {
   const navigate = useNavigate();
@@ -561,22 +561,15 @@ const MySpaceForm = () => {
         </Button>
       </Box>
 
-      <Box
-        sx={{
-          p: 3,
-          bgcolor: "#fff",
-          borderRadius: "12px",
-          border: `1px solid ${boiBorder}`,
-          boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-        }}
-      >
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+      <Box className="shadowBox scrollHeight">
+        <Box className="row">
           {/* Left Panel */}
-          <Box sx={{ flex: { xs: "1 1 100%", md: "0 0 38%" } }}>
-            <Box sx={{ position: "relative" }}>
+          <Box className="col-md-4">
+            <Box className="metaData" sx={{ position: "relative" }}>
               <Typography
+                component="h2"
                 variant="h6"
-                sx={{ fontWeight: 600, mb: 2, color: boiBlue }}
+                sx={{ mb: 2 }}
               >
                 Meta Data
               </Typography>
@@ -625,60 +618,62 @@ const MySpaceForm = () => {
                 </Box>
               )}
 
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {metaDataFields.map((field) => (
-                  <Box key={field.name}>
-                    {field.type === "select" ? (
-                      <CustomAutocomplete
-                        label={field.label}
-                        name={field.name}
-                        value={
-                          field.name.includes(".")
-                            ? form?.[field.name.split(".")[0]]?.[
-                                field.name.split(".")[1]
-                              ] || ""
-                            : form?.[field.name] || ""
-                        }
-                        options={optionsMap[field.optionsKey] || []}
-                        onChange={handleChange}
-                        required={field.required}
-                        error={!!errors[field.name]}
-                        helperText={errors[field.name]}
-                        disabled={isLoading}
-                      />
-                    ) : (
-                      <CustomTextField
-                        label={field.label}
-                        name={field.name}
-                        value={form[field.name] || ""}
-                        onChange={handleChange}
-                        required={field.required}
-                        type={field.type}
-                        maxLength={field.maxLength}
-                        error={errors[field.name]}
-                        pattern={field.pattern}
-                        helperText={errors[field.name]}
-                        readOnly={field.readOnly}
-                        disabled={isLoading}
-                      />
-                    )}
-                  </Box>
-                ))}
+              <Box className="formScroll scroll-on-hover">
+                <Box className="formData">
+                  {metaDataFields.map((field) => (
+                    <Box className="form-group mt-3" key={field.name}>
+                      {field.type === "select" ? (
+                        <CustomAutocomplete
+                          label={field.label}
+                          name={field.name}
+                          value={
+                            field.name.includes(".")
+                              ? form?.[field.name.split(".")[0]]?.[
+                                  field.name.split(".")[1]
+                                ] || ""
+                              : form?.[field.name] || ""
+                          }
+                          options={optionsMap[field.optionsKey] || []}
+                          onChange={handleChange}
+                          required={field.required}
+                          error={!!errors[field.name]}
+                          helperText={errors[field.name]}
+                          disabled={isLoading}
+                        />
+                      ) : (
+                        <CustomTextField
+                          label={field.label}
+                          name={field.name}
+                          value={form[field.name] || ""}
+                          onChange={handleChange}
+                          required={field.required}
+                          type={field.type}
+                          maxLength={field.maxLength}
+                          error={errors[field.name]}
+                          pattern={field.pattern}
+                          helperText={errors[field.name]}
+                          readOnly={field.readOnly}
+                          disabled={isLoading}
+                        />
+                      )}
+                    </Box>
+                  ))}
 
-                <Box sx={{ display: "none" }}>
-                  <input
-                    ref={fileInputRef}
-                    id="file"
-                    name="file"
-                    type="file"
-                    onChange={handleChange}
-                    disabled={isLoading || isSubmitting}
-                  />
+                  <Box sx={{ display: "none" }}>
+                    <input
+                      ref={fileInputRef}
+                      id="file"
+                      name="file"
+                      type="file"
+                      onChange={handleChange}
+                      disabled={isLoading || isSubmitting}
+                    />
+                  </Box>
                 </Box>
               </Box>
             </Box>
 
-            <Box sx={{ mt: 3, pt: 2, borderTop: `1px solid ${boiBorder}` }}>
+            <Box className="btnWrapper">
               <Box
                 component="ul"
                 sx={{
@@ -701,13 +696,11 @@ const MySpaceForm = () => {
           </Box>
 
           {/* Right Panel: DocumentPreview */}
-          <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 58%" } }}>
-            <DocumentPreview
-              isScanModalOpen={isScanModalOpen}
-              closeScanModal={closeScanModal}
-              actionsfile={actionsfile}
-            />
-          </Box>
+          <DocumentPreview
+            isScanModalOpen={isScanModalOpen}
+            closeScanModal={closeScanModal}
+            actionsfile={actionsfile}
+          />
         </Box>
       </Box>
     </Box>
