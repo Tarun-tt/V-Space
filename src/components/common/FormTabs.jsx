@@ -7,24 +7,11 @@ import { styled } from "@mui/material/styles";
 import { boiSuccessGreen, boiBlue, boiMutedText } from "../../theme/theme";
 
 /* ---------------- TAB CONTENT ---------------- */
-const TabContent = styled("span")(({ isActive, isCompleted }) => ({
+const TabContent = styled(Box)(({ isActive, isCompleted }) => ({
   display: "flex",
   alignItems: "center",
   gap: "8px",
 
-  // "& .prefix": {
-  //   fontWeight: 700,
-  //   fontSize: "0.75rem",
-  //   padding: "3px 8px",
-  //   borderRadius: "12px",
-  //   backgroundColor: isActive
-  //     ? boiBlue
-  //     : isCompleted
-  //       ? boiSuccessGreen
-  //       : "#e0e0e0",
-  //   color: "#fff",
-  //   transition: "all 0.2s ease",
-  // },
   "& .prefix": {
     fontWeight: 700,
     fontSize: "0.9rem",
@@ -134,11 +121,11 @@ export function FormTabs({
               disabled={tab.disabled || false}
               label={
                 <TabContent isActive={isActive} isCompleted={isCompleted}>
-                  <span className="prefix">
+                  <Box component="span" className="prefix">
                     {(index + 1).toString().padStart(2, "0")}
-                  </span>
-                  <span className="label-text">{tab.label}</span>
-                  {tab.badge && <span>{tab.badge}</span>}
+                  </Box>
+                  <Box component="span" className="label-text">{tab.label}</Box>
+                  {tab.badge && <Box component="span">{tab.badge}</Box>}
                 </TabContent>
               }
               sx={{

@@ -1,17 +1,20 @@
 // FileVersionHistory.jsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import DataTable from "../../components/common/DataTable";
-import showToast from "../../components/common/ToastMessage";
+import { ToastContext } from "../../components/common/ToastContext";
+import { LoadingContext } from "../../components/common/LoadingContext";
 import { boiBlue, boiBorder } from "../../theme/theme";
 
 const FileVersionHistory = () => {
   const { externalReferenceCode } = useParams();
   const navigate = useNavigate();
+  const { showToast } = useContext(ToastContext);
+  const { showLoading, hideLoading } = useContext(LoadingContext);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
   const [versionData, setVersionData] = useState([]);
@@ -75,6 +78,7 @@ const FileVersionHistory = () => {
   const fetchVersionHistory = useCallback(async () => {
     try {
       setLoading(true);
+      showLoading("Loading version history...", "Fetching versions from server");
       const portalURL = getPortalURL();
       const response = await fetch(
         `${portalURL}/o/combined-docs/items/file-versions/${externalReferenceCode}?page=${page}&pageSize=${pageSize}`,
@@ -135,8 +139,9 @@ const FileVersionHistory = () => {
       setVersionData([]);
     } finally {
       setLoading(false);
+      hideLoading();
     }
-  }, [externalReferenceCode, page, pageSize, fileInfo]);
+  }, [externalReferenceCode, page, pageSize, fileInfo, showLoading, hideLoading, showToast]);
 
   useEffect(() => {
     if (externalReferenceCode) {
@@ -156,6 +161,10 @@ const FileVersionHistory = () => {
   const handleDownload = async (friendlyUrlPath, fileName, version) => {
     try {
       setDownloading(true);
+      showLoading(
+        `Downloading version ${version}...`,
+        `Preparing ${fileName}`
+      );
       const portalURL = getPortalURL();
       const downloadUrl = `${portalURL}${friendlyUrlPath}`;
 
@@ -206,6 +215,7 @@ const FileVersionHistory = () => {
       });
     } finally {
       setDownloading(false);
+      hideLoading();
     }
   };
 

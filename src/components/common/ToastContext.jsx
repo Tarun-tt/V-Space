@@ -1,18 +1,44 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { createContext, useState, useCallback } from "react";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { ToastContext } from "./useToast";
+
+export const ToastContext = createContext({
+  showToast: () => {},
+  success: () => {},
+  error: () => {},
+  warning: () => {},
+  info: () => {},
+});
 
 export function ToastProvider({ children }) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
-  const [severity, setSeverity] = useState("success");
+  const [severity, setSeverity] = useState("info");
 
-  const showToast = useCallback((msg, sev = "success") => {
-    setMessage(msg);
-    const mappedSev = sev === "danger" ? "error" : sev;
-    setSeverity(mappedSev);
+  const showToast = useCallback((msgOrObj, sev = "info") => {
+    let text = "";
+    let level = sev;
+
+    if (typeof msgOrObj === "object" && msgOrObj !== null) {
+      const { message: m, title, type } = msgOrObj;
+      text = title ? `${title}: ${m}` : m || "";
+      level = type === "danger" ? "error" : type || sev || "info";
+    } else {
+      text = String(msgOrObj || "");
+      level = sev === "danger" ? "error" : sev || "info";
+    }
+
+    setMessage(text);
+    setSeverity(level);
     setOpen(true);
+
+    if (typeof window !== "undefined" && window.Liferay?.Util?.openToast) {
+      window.Liferay.Util.openToast({
+        message: text,
+        type: level,
+        autoClose: 5000,
+      });
+    }
   }, []);
 
   const success = useCallback((msg) => showToast(msg, "success"), [showToast]);
@@ -20,26 +46,17 @@ export function ToastProvider({ children }) {
   const warning = useCallback((msg) => showToast(msg, "warning"), [showToast]);
   const info = useCallback((msg) => showToast(msg, "info"), [showToast]);
 
-  useEffect(() => {
-    const handleGlobalToast = (e) => {
-      const { message: msg, type, title } = e.detail || {};
-      if (msg) {
-        const fullMsg = title ? `${title}: ${msg}` : msg;
-        showToast(fullMsg, type === "danger" ? "error" : type || "info");
-      }
-    };
-    window.addEventListener("app:toast", handleGlobalToast);
-    return () => window.removeEventListener("app:toast", handleGlobalToast);
-  }, [showToast]);
-
-  const handleClose = () => setOpen(false);
+  const handleClose = (_, reason) => {
+    if (reason === "clickaway") return;
+    setOpen(false);
+  };
 
   return (
-    <ToastContext.Provider value={{ success, error, warning, info, showToast }}>
+    <ToastContext.Provider value={{ showToast, success, error, warning, info }}>
       {children}
       <Snackbar
         open={open}
-        autoHideDuration={6000}
+        autoHideDuration={5000}
         onClose={handleClose}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
@@ -51,4 +68,4 @@ export function ToastProvider({ children }) {
   );
 }
 
-export default ToastProvider;
+export default ToastContext;

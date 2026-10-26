@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext } from "react";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -12,6 +12,8 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DownloadIcon from "@mui/icons-material/Download";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LoadingContext } from "./LoadingContext";
+import { ToastContext } from "./ToastContext";
 import {
   boiBlue,
   boiBorder,
@@ -160,6 +162,8 @@ export function CustomTextField({
   ...rest
 }) {
   const isDisabled = disabled || readOnly;
+  const { showLoading, hideLoading } = useContext(LoadingContext);
+  const { showToast } = useContext(ToastContext);
 
   const cellSx = cellVariant
     ? {
@@ -385,15 +389,44 @@ export function CustomTextField({
               <CloudUploadIcon sx={{ color: boiBlue }} />
             )}
           </Box>
-          <input
+          <Box
+            component="input"
             id={`${name}-input`}
             type="file"
-            hidden
-            accept=".pdf,.xls,.xlsx,.csv,.doc,.docx,.png,.jpg,.jpeg,.gif,.bmp,.webp"
+            sx={{ display: "none" }}
+            accept=".pdf,.xls,.xlsx,.csv,.doc,.docx,.png,.jpg,.jpeg,.gif,.bmp,.webp,.tif,.tiff"
             disabled={isDisabled}
-            onChange={(e) => {
-              if (onChange && e.target.files[0] && !isDisabled) {
-                onChange(e.target.files[0]);
+            onChange={async (e) => {
+              const file = e.target.files && e.target.files[0];
+              if (file && !isDisabled) {
+                if (showLoading) {
+                  showLoading(
+                    `Uploading attachment "${file.name}"...`,
+                    "Processing and attaching document"
+                  );
+                }
+                try {
+                  if (onChange) {
+                    await onChange(file);
+                  }
+                  if (showToast) {
+                    showToast({
+                      message: `Attachment "${file.name}" attached successfully!`,
+                      type: "success",
+                      title: "Attachment Uploaded",
+                    });
+                  }
+                } catch (uploadErr) {
+                  if (showToast) {
+                    showToast({
+                      message: `Failed to attach "${file.name}": ${uploadErr.message || uploadErr}`,
+                      type: "danger",
+                      title: "Attachment Error",
+                    });
+                  }
+                } finally {
+                  if (hideLoading) hideLoading();
+                }
               }
               e.target.value = "";
             }}

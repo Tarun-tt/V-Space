@@ -6,36 +6,29 @@ import MySpace from "./pages/VDMS/MySpace";
 import FileVersionHistory from "./pages/VDMS/FileVersionHistory";
 import MySpaceForm from "./pages/VDMS/MySpaceForm";
 import { ToastProvider } from "./components/common/ToastContext";
+import { LoadingProvider } from "./components/common/LoadingContext";
 
 const App = () => {
   return (
     <ToastProvider>
-      <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
-        <Routes>
-          <Route element={<MainLayout />}>
-            {/* <Route path="/" element={<Navigate to="/myspace" replace />} />
-            <Route path="/myspace" element={<MySpace />} />
-            <Route path="/myspace/form" element={<MySpaceForm />} />
-            <Route path="/myspace/form/:id" element={<MySpaceForm />} />
-            <Route
-              path="/myspace/history/:externalReferenceCode"
-              element={<FileVersionHistory />}
-            />
-            <Route path="*" element={<Navigate to="/myspace" replace />} /> */}
-            //////////////////////////////////////////////////////////////////////////////////////////
-            <Route path="/" element={<Navigate to="/myspace" />} />
-            <Route path="/myspace" element={<MySpace />} />
-            <Route
-              path="/myspace/history/:externalReferenceCode"
-              element={<FileVersionHistory />}
-            />
-            //////////////////////////////////////////////////////
-            {/* <Route path="/" element={<Navigate to="/myspace/form" />} />
-            <Route path="/myspace/form" element={<MySpaceForm />} />
-            <Route path="/myspace/form/:id" element={<MySpaceForm />} /> */}
-          </Route>
-        </Routes>
-      </Box>
+      <LoadingProvider>
+        <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+          <Routes>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Navigate to="/myspace" />} />
+              <Route path="/myspace" element={<MySpace />} />
+              <Route
+                path="/myspace/history/:externalReferenceCode"
+                element={<FileVersionHistory />}
+              />
+              //////////////////////////////////////////////////////
+              {/* <Route path="/" element={<Navigate to="/myspace/form" />} />
+              <Route path="/myspace/form" element={<MySpaceForm />} />
+              <Route path="/myspace/form/:id" element={<MySpaceForm />} /> */}
+            </Route>
+          </Routes>
+        </Box>
+      </LoadingProvider>
     </ToastProvider>
   );
 };

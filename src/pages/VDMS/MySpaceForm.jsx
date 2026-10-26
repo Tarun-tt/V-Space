@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -20,11 +20,14 @@ import {
   tagOptions,
 } from "./headerData";
 import DocumentPreview from "../../components/common/DocumentPreview";
-import showToast from "../../components/common/ToastMessage";
+import { ToastContext } from "../../components/common/ToastContext";
+import { LoadingContext } from "../../components/common/LoadingContext";
 import { boiBlue, boiBorder } from "../../theme/theme";
 
 const MySpaceForm = () => {
   const navigate = useNavigate();
+  const { showToast } = useContext(ToastContext);
+  const { showLoading, hideLoading } = useContext(LoadingContext);
   const [isDirty, setIsDirty] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -231,34 +234,39 @@ const MySpaceForm = () => {
     window.updateDocMetaField = (name, value) => {
       if (name === "file") {
         if (value instanceof Blob || value instanceof File) {
-          let fileName = value.name || "scanned_document";
+          showLoading("Loading attachment...", "Processing attachment for preview");
+          try {
+            let fileName = value.name || "scanned_document";
 
-          if (
-            !fileName.toLowerCase().endsWith(".tif") &&
-            !fileName.toLowerCase().endsWith(".tiff")
-          ) {
-            fileName = fileName.replace(/\.[^/.]+$/, "") + ".tif";
+            if (
+              !fileName.toLowerCase().endsWith(".tif") &&
+              !fileName.toLowerCase().endsWith(".tiff")
+            ) {
+              fileName = fileName.replace(/\.[^/.]+$/, "") + ".tif";
+            }
+
+            const file = new File([value], fileName, {
+              type: value.type || "image/tiff",
+              lastModified: Date.now(),
+            });
+
+            setForm((prev) => ({
+              ...prev,
+              uploadedFile: file,
+              fileName: prev.fileName || fileName.replace(/\.[^/.]+$/, ""),
+            }));
+
+            setErrors((prev) => ({ ...prev, file: "" }));
+
+            showToast({
+              message: `File loaded: ${fileName}`,
+              type: "success",
+              title: "File Loaded",
+              autoClose: 2000,
+            });
+          } finally {
+            hideLoading();
           }
-
-          const file = new File([value], fileName, {
-            type: value.type || "image/tiff",
-            lastModified: Date.now(),
-          });
-
-          setForm((prev) => ({
-            ...prev,
-            uploadedFile: file,
-            fileName: prev.fileName || fileName.replace(/\.[^/.]+$/, ""),
-          }));
-
-          setErrors((prev) => ({ ...prev, file: "" }));
-
-          showToast({
-            message: `File loaded: ${fileName}`,
-            type: "success",
-            title: "File Loaded",
-            autoClose: 2000,
-          });
         } else {
           handleManualUpdate(name, value);
         }
@@ -420,6 +428,10 @@ const MySpaceForm = () => {
       }
 
       setIsSubmitting(true);
+      showLoading(
+        isEditMode ? "Updating document..." : "Submitting document...",
+        "Uploading document and metadata to server"
+      );
 
       const submitData = prepareSubmitFormData();
       let folderIdToUse = parentFolderId || "";
@@ -428,16 +440,20 @@ const MySpaceForm = () => {
         ? documentData?.externalReferenceCode
         : null;
 
-      await submitDocument(
+      const apiResponse = await submitDocument(
         submitData,
         folderIdToUse,
         externalReferenceCode,
       );
 
-      showToast({
-        message: isEditMode
+      const responseMessage =
+        apiResponse?.message ||
+        (isEditMode
           ? "Document updated successfully!"
-          : "Document submitted successfully!",
+          : "Document submitted successfully!");
+
+      showToast({
+        message: responseMessage,
         type: "success",
         title: "Success",
       });
@@ -461,6 +477,7 @@ const MySpaceForm = () => {
       });
     } finally {
       setIsSubmitting(false);
+      hideLoading();
     }
   };
 

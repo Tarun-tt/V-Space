@@ -1,16 +1,19 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import { fetchDocuments } from "./apiService";
-import showToast from "../../components/common/ToastMessage";
+import { ToastContext } from "../../components/common/ToastContext";
+import { LoadingContext } from "../../components/common/LoadingContext";
 import CustomTextField from "../../components/common/CustomTextField";
 import { boiBlue, boiBorder, boiErrorRed } from "../../theme/theme";
 
 const MySpace = () => {
   const navigate = useNavigate();
+  const { showToast } = useContext(ToastContext);
+  const { showLoading, hideLoading } = useContext(LoadingContext);
   const [mySpaceItems, setMySpaceItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -18,9 +21,6 @@ const MySpace = () => {
   const [currentFolderId, setCurrentFolderId] = useState(null);
   const [folderHistory, setFolderHistory] = useState([]);
   const [openDropdownId, setOpenDropdownId] = useState(null);
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [historyData] = useState([]);
-  const [loadingHistory] = useState(false);
 
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   const [folderName, setFolderName] = useState("");
@@ -183,6 +183,7 @@ const MySpace = () => {
     if (!confirmDelete) return;
 
     try {
+      showLoading(`Deleting "${itemName}"...`, "Please wait while we process the deletion");
       const portalURL = getPortalURL();
       const response = await fetch(
         `${portalURL}/o/combined-docs/actions/remove/${externalReferenceCode}`,
@@ -200,10 +201,25 @@ const MySpace = () => {
         throw new Error(errorText || `HTTP error! status: ${response.status}`);
       }
 
+      let successMsg = `"${itemName}" deleted successfully`;
+      try {
+        const resText = await response.text();
+        if (resText) {
+          try {
+            const parsed = JSON.parse(resText);
+            successMsg = parsed.message || successMsg;
+          } catch {
+            successMsg = resText.replace(/^["']|["']$/g, "") || successMsg;
+          }
+        }
+      } catch {
+        // fallback to default success message
+      }
+
       showToast({
-        message: `"${itemName}" deleted successfully`,
+        message: successMsg,
         type: "success",
-        title: "Success",
+        title: "Deleted",
       });
 
       await loadItems(searchTerm, currentFolderId);
@@ -214,6 +230,8 @@ const MySpace = () => {
         type: "danger",
         title: "Error",
       });
+    } finally {
+      hideLoading();
     }
   };
 
@@ -229,6 +247,7 @@ const MySpace = () => {
     }
 
     try {
+      showLoading(`Creating folder "${folderName}"...`, "Please wait while folder is being created");
       setCreatingFolder(true);
       setFolderCreateError(null);
 
@@ -296,6 +315,7 @@ const MySpace = () => {
       });
     } finally {
       setCreatingFolder(false);
+      hideLoading();
     }
   };
 
@@ -817,73 +837,7 @@ const MySpace = () => {
         )}
       </Box>
 
-      {/* History Modal */}
-      {showHistoryModal && (
-        <Box
-          sx={{
-            position: "fixed",
-            inset: 0,
-            bgcolor: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1300,
-          }}
-          onClick={() => setShowCreateFolderModal(false)}
-        >
-          <Box
-            sx={{
-              bgcolor: "#fff",
-              borderRadius: "12px",
-              p: 3,
-              maxWidth: 480,
-              width: "90%",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 2,
-              }}
-            >
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Version History
-              </Typography>
-              <Button
-                size="small"
-                onClick={() => setShowCreateFolderModal(false)}
-                sx={{ minWidth: 32, p: 0.5 }}
-              >
-                ×
-              </Button>
-            </Box>
-            <Box>
-              {loadingHistory ? (
-                <CircularProgress size={24} />
-              ) : historyData && historyData.length > 0 ? (
-                historyData.map((version, index) => (
-                  <Box key={index} sx={{ py: 1, borderBottom: "1px solid #eee" }}>
-                    <Typography sx={{ fontWeight: 600 }}>
-                      Version {version.version || index + 1}
-                    </Typography>
-                    <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
-                      {formatDate(version.modifiedDate || version.createdDate)}
-                    </Typography>
-                  </Box>
-                ))
-              ) : (
-                <Typography sx={{ color: "text.secondary" }}>
-                  No version history available
-                </Typography>
-              )}
-            </Box>
-          </Box>
-        </Box>
-      )}
+
 
       {/* Create Folder Modal */}
       {showCreateFolderModal && (

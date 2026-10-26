@@ -1,5 +1,11 @@
 import React, { useEffect, useRef } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Radio from "@mui/material/Radio";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import CustomTextField from "./CustomTextField";
 import { docmetaDataFields } from "../../pages/VDMS/headerData";
+import { boiBorder } from "../../theme/theme";
 
 const DocumentsSection = ({ form, handleChange }) => {
   const docMetaRefs = useRef({});
@@ -42,81 +48,78 @@ const DocumentsSection = ({ form, handleChange }) => {
   }, [form]);
 
   return (
-    <div className="col-md-6 pl-0">
-      <div className="docSec">
-        <h2>Documents Type</h2>
-        <div className="docScroll scroll-on-hover">
-          <div className="formData">
+    <Box sx={{ width: "100%", maxWidth: { md: "50%" }, pl: 0 }}>
+      <Box sx={{ p: 2, border: `1px solid ${boiBorder}`, borderRadius: "10px", bgcolor: "#fff" }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+          Documents Type
+        </Typography>
+        <Box sx={{ maxHeight: 400, overflowY: "auto" }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {docmetaDataFields.map((field, index) => (
-              <div
-                className={`formBox ${index === 0 ? "active" : ""}`}
+              <Box
                 key={field.id}
+                sx={{
+                  p: 2,
+                  border: `1px solid ${index === 0 ? "primary.main" : boiBorder}`,
+                  borderRadius: "8px",
+                  bgcolor: index === 0 ? "rgba(0, 114, 206, 0.04)" : "background.paper",
+                }}
               >
-                <div className="form-check mb-3">
-                  <label className="form-check-label">
-                    <input
-                      type="radio"
-                      className="form-check-input"
-                      name="optradio"
-                      defaultChecked={index === 0}
-                      id={`${field.id}-${index}`}
+                <Box sx={{ mb: 1 }}>
+                  <FormControlLabel
+                    control={
+                      <Radio
+                        name="optradio"
+                        defaultChecked={index === 0}
+                        id={`${field.id}-${index}`}
+                        size="small"
+                      />
+                    }
+                    label={<Typography sx={{ fontSize: 14, fontWeight: 500 }}>{field.name}</Typography>}
+                  />
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Typography sx={{ minWidth: "60px", fontSize: 13, color: "text.secondary" }}>
+                    Pages:
+                  </Typography>
+                  <Box sx={{ display: "flex", flexGrow: 1, gap: 1 }}>
+                    <CustomTextField
+                      id={field.toField}
+                      name={field.toField}
+                      value={form[field.toField] || ""}
+                      onChange={handleChange}
+                      disabled
+                      size="small"
                     />
-                    {field.name}
-                  </label>
-                </div>
-                <div className="form-group">
-                  <div className="d-flex align-items-center inlineInput">
-                    <div className="label mr-2" style={{ minWidth: "60px" }}>
-                      Pages:
-                    </div>
-                    <div className="d-flex flex-grow-1 gap-2">
-                      <input
-                        type="text"
-                        className="form-control"
-                        id={field.toField}
-                        name={field.toField}
-                        value={form[field.toField] || ""}
-                        onChange={handleChange}
-                        readOnly
-                        ref={(el) => {
-                          docMetaRefs.current[field.toField] = el;
-                          if (el) el.value = form[field.toField] || "";
-                        }}
-                      />
-                      <input
-                        type="text"
-                        className="form-control mr-2"
-                        id={field.fromField}
-                        name={field.fromField}
-                        value={form[field.fromField] || ""}
-                        onChange={handleChange}
-                        readOnly
-                        ref={(el) => {
-                          docMetaRefs.current[field.fromField] = el;
-                          if (el) el.value = form[field.fromField] || "";
-                        }}
-                      />
-
-                      <input
-                        type="file"
-                        id={field.id}
-                        name={field.file}
-                        style={{ display: "none" }}
-                        onChange={handleChange}
-                        ref={(el) => {
-                          docMetaRefs.current[field.file] = el;
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
+                    <CustomTextField
+                      id={field.fromField}
+                      name={field.fromField}
+                      value={form[field.fromField] || ""}
+                      onChange={handleChange}
+                      disabled
+                      size="small"
+                    />
+                    <Box
+                      component="input"
+                      type="file"
+                      id={field.id}
+                      name={field.file}
+                      sx={{ display: "none" }}
+                      onChange={handleChange}
+                      ref={(el) => {
+                        docMetaRefs.current[field.file] = el;
+                      }}
+                    />
+                  </Box>
+                </Box>
+              </Box>
             ))}
-          </div>
-        </div>
-      </div>
-    </div>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
 export default DocumentsSection;
+
