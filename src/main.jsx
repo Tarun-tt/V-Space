@@ -9,6 +9,8 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import App from "./App";
 import { theme } from "./theme/theme";
+import "./index.css";
+import "./App.css";
 
 const printStyle = document.createElement("style");
 printStyle.textContent = `
@@ -121,7 +123,6 @@ class WebComponent extends HTMLElement {
   }
 }
 
-// const ELEMENT_NAME = "abbff-form";
 const ELEMENT_NAME = "my-space";
 // const ELEMENT_NAME = "my-spaceform";
 

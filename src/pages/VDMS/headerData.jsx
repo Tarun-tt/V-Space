@@ -203,3 +203,5 @@ export const getInitialFormState = () => {
 
   return formState;
 };
+
+export const docmetaDataFields = [];

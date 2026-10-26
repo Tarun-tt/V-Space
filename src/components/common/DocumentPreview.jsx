@@ -1,15 +1,16 @@
 import React from "react";
+import Box from "@mui/material/Box";
 import ActionButton from "./ActionButtons";
 
 const DocumentPreview = ({ isScanModalOpen, closeScanModal, actionsfile }) => {
   return (
-    <div className="col-md-8 pl-0">
-      <div className="docPreview">
+    <Box className="col-md-8 pl-0">
+      <Box className="docPreview">
         {/* <h2>Customer 1 documents Preview</h2> */}
-        <div className="docImg scroll-on-hover">
-          <div className="ds-dwt-content ds-dwt-center">
-            <div id="DWTcontainerTop">
-              <div id="divEdit">
+        <Box className="docImg scroll-on-hover">
+          <Box className="ds-dwt-content ds-dwt-center">
+            <Box id="DWTcontainerTop">
+              <Box id="divEdit">
                 <ul className="operateGrp">
                   <li></li>
                   <li></li>
@@ -21,130 +22,130 @@ const DocumentPreview = ({ isScanModalOpen, closeScanModal, actionsfile }) => {
                   <li className="lblZoom">
                     <ul>
                       <li style={{ width: "25%" }}>
-                        <div
+                        <Box
                           className="menuIcon ZoomOut"
                           title="Zoom out"
                           alt="Zoom out"
                           id="btnZoomOut"
                           onClick={() => window.btnZoomOut_onclick()}
-                        ></div>
+                        ></Box>
                       </li>
                       <li style={{ width: "50%" }}>
                         <input type="text" id="DW_spanZoom" readOnly />
                       </li>
                       <li style={{ width: "25%" }}>
-                        <div
+                        <Box
                           className="menuIcon ZoomIn"
                           title="Zoom in"
                           alt="Zoom in"
                           id="btnZoomIn"
                           onClick={() => window.btnZoomIn_onclick()}
-                        ></div>
+                        ></Box>
                       </li>
                     </ul>
                   </li>
                   <li>
-                    <div
+                    <Box
                       style={{ marginLeft: "10px" }}
                       className="menuIcon OrigSize"
                       title="1:1"
                       alt="1:1"
                       id="btnOrigSize"
                       onClick={() => window.btnOrigSize_onclick()}
-                    ></div>
-                    <div
+                    ></Box>
+                    <Box
                       className="menuIcon FitWindow"
                       title="Fit To Window"
                       alt="Fit To Window"
                       id="btnFitWindow"
                       style={{ display: "none" }}
                       onClick={() => window.btnFitWindow_onclick()}
-                    ></div>
+                    ></Box>
                   </li>
                   <li style={{ width: "50px" }}></li>
                   <li>
-                    <div
+                    <Box
                       className="menuIcon RotateLeft"
                       title="Rotate left"
                       alt="Rotate left"
                       id="btnRotateL"
                       onClick={() => window.btnRotateLeft_onclick()}
-                    ></div>
+                    ></Box>
                   </li>
                   <li>
-                    <div
+                    <Box
                       className="menuIcon grayimg Crop"
                       title="Please select an area to crop."
                       alt="Please select an area to crop."
                       id="btnCropGray"
-                    ></div>
-                    <div
+                    ></Box>
+                    <Box
                       className="menuIcon Crop"
                       title="Crop"
                       alt="Crop"
                       id="btnCrop"
                       style={{ display: "none" }}
                       onClick={() => window.btnCrop_onclick()}
-                    ></div>
+                    ></Box>
                   </li>
                   <li>
-                    <div
+                    <Box
                       className="menuIcon ShowEditor"
                       title="Show image editor"
                       alt="Show image editor"
                       id="btnShowImageEditor"
                       onClick={() => window.ghostEditor()}
-                    ></div>
+                    ></Box>
                   </li>
                   <li style={{ marginTop: 0 }}>
-                    <div
+                    <Box
                       className="menuIcon SelectSelected"
                       title="Select"
                       alt="Select"
                       id="btnSelect_selected"
-                    ></div>
-                    <div
+                    ></Box>
+                    <Box
                       className="menuIcon Select"
                       style={{ display: "none" }}
                       title="Select"
                       alt="Select"
                       id="btnSelect"
                       onClick={() => window.btnSelect_onclick()}
-                    ></div>
+                    ></Box>
                   </li>
                   <li style={{ marginTop: 0 }}>
-                    <div
+                    <Box
                       className="menuIcon HandSelected"
                       style={{ display: "none" }}
                       title="Hand"
                       alt="Hand"
                       id="btnHand_selected"
-                    ></div>
-                    <div
+                    ></Box>
+                    <Box
                       className="menuIcon Hand"
                       title="Hand"
                       alt="Hand"
                       id="btnHand"
                       onClick={() => window.btnHand_onclick()}
-                    ></div>
+                    ></Box>
                   </li>
                 </ul>
-              </div>
-              <div id="dwtcontrolContainer" style={{ border: "groove" }}></div>
-            </div>
+              </Box>
+              <Box id="dwtcontrolContainer" style={{ border: "groove" }}></Box>
+            </Box>
 
             {/* Modal */}
-            <div
+            <Box
               className={`modal fade ${isScanModalOpen ? "show d-block" : ""}`}
               tabIndex="-1"
               role="dialog"
             >
-              <div
+              <Box
                 className="modal-dialog modal-dialog-centered"
                 role="document"
               >
-                <div className="modal-content">
-                  <div className="modal-header d-flex justify-content-between align-items-center">
+                <Box className="modal-content">
+                  <Box className="modal-header d-flex justify-content-between align-items-center">
                     <h5 className="modal-title">Custom Scan</h5>
                     <button
                       type="button"
@@ -152,11 +153,11 @@ const DocumentPreview = ({ isScanModalOpen, closeScanModal, actionsfile }) => {
                       onClick={closeScanModal}
                       aria-label="Close"
                     >
-                      <span aria-hidden="true">&times;</span>
+                      <Box component="span" aria-hidden="true">&times;</Box>
                     </button>
-                  </div>
-                  <div className="modal-body">
-                    <div id="div_ScanImage" className="divTableStyle">
+                  </Box>
+                  <Box className="modal-body">
+                    <Box id="div_ScanImage" className="divTableStyle">
                       <ul id="ulScaneImageHIDE">
                         <li>
                           <label htmlFor="source">
@@ -188,7 +189,7 @@ const DocumentPreview = ({ isScanModalOpen, closeScanModal, actionsfile }) => {
                               </label>
                             </li>
                             <li>
-                              <span>Pixel Type:</span>
+                              <Box component="span">Pixel Type:</Box>
                               <label htmlFor="BW" className="ml-2">
                                 <input type="radio" id="BW" name="PixelType" />{" "}
                                 B&W
@@ -207,7 +208,7 @@ const DocumentPreview = ({ isScanModalOpen, closeScanModal, actionsfile }) => {
                               </label>
                             </li>
                             <li>
-                              <span>Resolution:</span>
+                              <Box component="span">Resolution:</Box>
                               <select
                                 id="Resolution"
                                 className="form-control w-auto d-inline-block ml-2"
@@ -222,25 +223,16 @@ const DocumentPreview = ({ isScanModalOpen, closeScanModal, actionsfile }) => {
                           </ul>
                         </li>
                         <li className="mt-3">
-                          {/* <input
-                            id="btnScan"
-                            className="btn btn-primary"
-                            disabled
-                            type="button"
-                            value="Scan"
-                            onClick={() => window.scanFile()}
-                          /> */}
                           <button
                             id="btnScan"
                             className="btn btn-primary"
                             type="button"
                             onClick={() => {
-                              // console.log("Scan button clicked");
                               window.scanFile();
                             }}
                             ref={(el) => {
                               if (el) {
-                                el.disabled = false; // Force enable via ref
+                                el.disabled = false;
                                 el.style.opacity = 1;
                                 el.style.pointerEvents = "auto";
                               }
@@ -250,16 +242,16 @@ const DocumentPreview = ({ isScanModalOpen, closeScanModal, actionsfile }) => {
                           </button>
                         </li>
                       </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+                    </Box>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
       {actionsfile?.length > 0 && (
-        <div
+        <Box
           className="btnWrapper docPrevBtn"
           style={{ position: "absolute", bottom: "0", width: "100%" }}
         >
@@ -270,9 +262,9 @@ const DocumentPreview = ({ isScanModalOpen, closeScanModal, actionsfile }) => {
               </li>
             ))}
           </ul>
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };
 

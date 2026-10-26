@@ -51,7 +51,7 @@ export const createFolder = async (folderData) => {
         data: data,
         message: data.message || "Folder created successfully",
       };
-    } catch (parseError) {
+    } catch {
       console.log(
         "Response is not JSON, treating as plain text:",
         responseText,
@@ -230,7 +230,7 @@ export const submitDocument = async (
     try {
       const jsonResponse = JSON.parse(responseText);
       return jsonResponse;
-    } catch (parseError) {
+    } catch {
       return {
         success: true,
         message: responseText,

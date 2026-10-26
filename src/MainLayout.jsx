@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
+import Box from "@mui/material/Box";
 
 const MainLayout = () => {
   useEffect(() => {
@@ -10,7 +11,11 @@ const MainLayout = () => {
     };
   }, []);
 
-  return <Outlet />;
+  return (
+    <Box sx={{ minHeight: "100vh", bgcolor: "background.default", display: "flex", flexDirection: "column" }}>
+      <Outlet />
+    </Box>
+  );
 };
 
 export default MainLayout;

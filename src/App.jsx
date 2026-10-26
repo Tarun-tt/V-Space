@@ -1,57 +1,43 @@
-// // ABBFFData.js
-// import { Routes, Route, Navigate } from "react-router-dom";
-// import { ToastProvider } from "./components/common/ToastContext";
-// import ABBFFPage from "./pages/ABBFF/ABBFFPage";
-// import Layout from "./components/layout/Layout";
-
-// function App({ route = "/" }) {
-//   return (
-//     <ToastProvider>
-//       <Layout>
-//         <Routes>
-//           <Route
-//             path="/"
-//             element={<Navigate to="/abbff/complaint-details" replace />}
-//           />
-//           <Route
-//             path="/abbff"
-//             element={<Navigate to="/abbff/complaint-details" replace />}
-//           />
-//           <Route path="/abbff/:tab" element={<ABBFFPage />} />
-//           <Route
-//             path="*"
-//             element={<Navigate to="/abbff/complaint-details" replace />}
-//           />
-//         </Routes>
-//       </Layout>
-//     </ToastProvider>
-//   );
-// }
-
-// export default App;
-
+import React from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
+import Box from "@mui/material/Box";
 import MainLayout from "./MainLayout";
 import MySpace from "./pages/VDMS/MySpace";
 import FileVersionHistory from "./pages/VDMS/FileVersionHistory";
+import MySpaceForm from "./pages/VDMS/MySpaceForm";
+import { ToastProvider } from "./components/common/ToastContext";
 
-const AppRoutes = () => {
+const App = () => {
   return (
-    <Routes>
-      <Route element={<MainLayout />}>
-        <Route path="/" element={<Navigate to="/myspace" />} />
-        <Route path="/myspace" element={<MySpace />} />
-        <Route
-          path="/myspace/history/:externalReferenceCode"
-          element={<FileVersionHistory />}
-        />
-        //////////////////////////////////////////////////////
-        {/* <Route path="/" element={<Navigate to="/myspace/form" />} />
-        <Route path="/myspace/form" element={<MySpaceForm />} />
-        <Route path="/myspace/form/:id" element={<MySpaceForm />} /> */}
-      </Route>
-    </Routes>
+    <ToastProvider>
+      <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+        <Routes>
+          <Route element={<MainLayout />}>
+            {/* <Route path="/" element={<Navigate to="/myspace" replace />} />
+            <Route path="/myspace" element={<MySpace />} />
+            <Route path="/myspace/form" element={<MySpaceForm />} />
+            <Route path="/myspace/form/:id" element={<MySpaceForm />} />
+            <Route
+              path="/myspace/history/:externalReferenceCode"
+              element={<FileVersionHistory />}
+            />
+            <Route path="*" element={<Navigate to="/myspace" replace />} /> */}
+            //////////////////////////////////////////////////////////////////////////////////////////
+            <Route path="/" element={<Navigate to="/myspace" />} />
+            <Route path="/myspace" element={<MySpace />} />
+            <Route
+              path="/myspace/history/:externalReferenceCode"
+              element={<FileVersionHistory />}
+            />
+            //////////////////////////////////////////////////////
+            {/* <Route path="/" element={<Navigate to="/myspace/form" />} />
+            <Route path="/myspace/form" element={<MySpaceForm />} />
+            <Route path="/myspace/form/:id" element={<MySpaceForm />} /> */}
+          </Route>
+        </Routes>
+      </Box>
+    </ToastProvider>
   );
 };
 
-export default AppRoutes;
+export default App;

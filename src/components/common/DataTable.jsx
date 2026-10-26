@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -8,7 +9,6 @@ import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
-import { useState } from "react";
 import { boiBlue, boiTableHeaderBg, boiBorder } from "../../theme/theme";
 
 function HeaderCell({ children, sortable, align }) {
@@ -38,34 +38,66 @@ function HeaderCell({ children, sortable, align }) {
 }
 
 export function DataTable({
-  columns,
+  columns = [],
   rows,
-  getRowId,
-  emptyMessage = "No records",
+  data,
+  getRowId = (row, i) => row?.id || row?.externalReferenceCode || `row-${i}`,
+  emptyMessage = "No records found",
   page: controlledPage,
   rowsPerPage: controlledRowsPerPage,
+  pageSize,
   totalRows,
+  totalCount,
   onPageChange,
   onRowsPerPageChange,
-  rowsPerPageOptions = [5, 10, 25],
+  onPageSizeChange,
+  rowsPerPageOptions = [10, 20, 50],
   onRowClick,
 }) {
+  const tableData = rows || data || [];
   const [localPage, setLocalPage] = useState(0);
-  const [localRpp, setLocalRpp] = useState(10);
+  const [localRpp, setLocalRpp] = useState(20);
 
-  const page = controlledPage ?? localPage;
-  const rowsPerPage = controlledRowsPerPage ?? localRpp;
-  const count = totalRows ?? rows.length;
+  // Support 1-based page from parent or 0-based
+  const isOneBased = typeof controlledPage === "number" && controlledPage >= 1;
+  const page =
+    controlledPage !== undefined
+      ? isOneBased
+        ? controlledPage - 1
+        : controlledPage
+      : localPage;
+  const rowsPerPage = controlledRowsPerPage ?? pageSize ?? localRpp;
+  const count = totalRows ?? totalCount ?? tableData.length;
 
   const sliceStart = controlledPage === undefined ? page * rowsPerPage : 0;
   const sliceEnd =
-    controlledPage === undefined ? sliceStart + rowsPerPage : rows.length;
+    controlledPage === undefined ? sliceStart + rowsPerPage : tableData.length;
   const visibleRows =
-    controlledPage === undefined ? rows.slice(sliceStart, sliceEnd) : rows;
+    controlledPage === undefined
+      ? tableData.slice(sliceStart, sliceEnd)
+      : tableData;
+
+  const handleMuiPageChange = (_, newPage) => {
+    if (onPageChange) {
+      onPageChange(isOneBased ? newPage + 1 : newPage);
+    }
+    if (controlledPage === undefined) setLocalPage(newPage);
+  };
+
+  const handleMuiRowsPerPageChange = (e) => {
+    const next = parseInt(e.target.value, 10);
+    if (onRowsPerPageChange) onRowsPerPageChange(next);
+    if (onPageSizeChange) onPageSizeChange(next);
+    if (controlledRowsPerPage === undefined && pageSize === undefined) {
+      setLocalRpp(next);
+      setLocalPage(0);
+    }
+  };
 
   return (
     <Paper
       elevation={0}
+      component={Box}
       sx={{
         border: `1px solid ${boiBorder}`,
         borderRadius: "12px",
@@ -73,13 +105,16 @@ export function DataTable({
         bgcolor: "#fff",
       }}
     >
-      <TableContainer>
+      <TableContainer component={Box}>
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
-              {columns.map((col) => (
-                <HeaderCell key={String(col.id)} align={col.align}>
-                  {col.label}
+              {columns.map((col, idx) => (
+                <HeaderCell
+                  key={String(col.id || col.accessor || idx)}
+                  align={col.align || "left"}
+                >
+                  {col.label || col.header}
                 </HeaderCell>
               ))}
             </TableRow>
@@ -92,14 +127,14 @@ export function DataTable({
                   align="center"
                   sx={{ py: 4 }}
                 >
-                  {emptyMessage}
+                  <Box sx={{ color: "text.secondary" }}>{emptyMessage}</Box>
                 </TableCell>
               </TableRow>
             ) : (
               visibleRows.map((row, rowIndex) => (
                 <TableRow
                   hover
-                  key={getRowId(row)}
+                  key={getRowId(row, rowIndex)}
                   onClick={() => onRowClick?.(row)}
                   sx={{
                     cursor: onRowClick ? "pointer" : "default",
@@ -107,22 +142,32 @@ export function DataTable({
                     "&:last-child td": { borderBottom: 0 },
                   }}
                 >
-                  {columns.map((col, ci) => (
-                    <TableCell
-                      key={`${String(col.id)}-${ci}`}
-                      align={col.align}
-                      sx={{
-                        fontSize: 13,
-                        borderBottom: `1px solid ${boiBorder}`,
-                        py: 1.1,
-                        color: "text.primary",
-                      }}
-                    >
-                      {col.format
-                        ? col.format(row, sliceStart + rowIndex + 1)
-                        : String(row[col.id] ?? "")}
-                    </TableCell>
-                  ))}
+                  {columns.map((col, ci) => {
+                    const colKey = col.id || col.accessor || `col-${ci}`;
+                    let cellContent;
+                    if (typeof col.render === "function") {
+                      cellContent = col.render(row, rowIndex);
+                    } else if (typeof col.format === "function") {
+                      cellContent = col.format(row, sliceStart + rowIndex + 1);
+                    } else {
+                      cellContent = row[colKey] ?? "";
+                    }
+
+                    return (
+                      <TableCell
+                        key={`${String(colKey)}-${ci}`}
+                        align={col.align || "left"}
+                        sx={{
+                          fontSize: 13,
+                          borderBottom: `1px solid ${boiBorder}`,
+                          py: 1.1,
+                          color: "text.primary",
+                        }}
+                      >
+                        {cellContent}
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))
             )}
@@ -130,22 +175,12 @@ export function DataTable({
         </Table>
       </TableContainer>
       <TablePagination
-        component="div"
+        component={Box}
         count={count}
-        page={page}
-        onPageChange={(_, p) => {
-          onPageChange?.(p);
-          if (controlledPage === undefined) setLocalPage(p);
-        }}
+        page={Math.max(0, page)}
+        onPageChange={handleMuiPageChange}
         rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={(e) => {
-          const next = parseInt(e.target.value, 10);
-          onRowsPerPageChange?.(next);
-          if (controlledRowsPerPage === undefined) {
-            setLocalRpp(next);
-            setLocalPage(0);
-          }
-        }}
+        onRowsPerPageChange={handleMuiRowsPerPageChange}
         rowsPerPageOptions={rowsPerPageOptions}
         labelRowsPerPage="Show"
         showFirstButton
@@ -167,3 +202,5 @@ export function DataTable({
     </Paper>
   );
 }
+
+export default DataTable;

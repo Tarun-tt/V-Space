@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchDocuments } from "../apiService";
-import showToast from "../CommonComponent/ToastMessage";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import { fetchDocuments } from "./apiService";
+import showToast from "../../components/common/ToastMessage";
+import CustomTextField from "../../components/common/CustomTextField";
+import { boiBlue, boiBorder, boiErrorRed } from "../../theme/theme";
 
 const MySpace = () => {
   const navigate = useNavigate();
@@ -9,14 +15,12 @@ const MySpace = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchInput, setSearchInput] = useState("");
   const [currentFolderId, setCurrentFolderId] = useState(null);
   const [folderHistory, setFolderHistory] = useState([]);
-  const [downloadingId, setDownloadingId] = useState(null);
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [historyData, setHistoryData] = useState([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [historyData] = useState([]);
+  const [loadingHistory] = useState(false);
 
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   const [folderName, setFolderName] = useState("");
@@ -25,8 +29,8 @@ const MySpace = () => {
   const [folderCreateError, setFolderCreateError] = useState(null);
 
   const [apiActions, setApiActions] = useState({
-    uploadFile: null,
-    createFolder: null,
+    uploadFile: true,
+    createFolder: true,
   });
 
   const transformItemsForDisplay = (items) => {
@@ -108,13 +112,8 @@ const MySpace = () => {
 
         if (response && response.actions) {
           setApiActions({
-            uploadFile: response.actions.uploadFile || null,
-            createFolder: response.actions.createFolder || null,
-          });
-        } else {
-          setApiActions({
-            uploadFile: null,
-            createFolder: null,
+            uploadFile: response.actions.uploadFile || true,
+            createFolder: response.actions.createFolder || true,
           });
         }
 
@@ -158,6 +157,22 @@ const MySpace = () => {
     setOpenDropdownId(null);
     navigate(`/myspace/history/${externalReferenceCode}`);
   };
+
+  const getPortalURL = () => {
+    if (window?.Liferay?.ThemeDisplay?.getPortalURL) {
+      return window.Liferay.ThemeDisplay.getPortalURL();
+    }
+    return `${window.location.protocol}//${window.location.host}`;
+  };
+
+  const getHeaders = () => {
+    const csrfToken = window?.Liferay?.authToken || "";
+    return {
+      "x-csrf-token": csrfToken,
+      "Content-Type": "application/json",
+    };
+  };
+
   const handleDelete = async (externalReferenceCode, itemName) => {
     setOpenDropdownId(null);
 
@@ -192,10 +207,10 @@ const MySpace = () => {
       });
 
       await loadItems(searchTerm, currentFolderId);
-    } catch (error) {
-      console.error("Error deleting item:", error);
+    } catch (err) {
+      console.error("Error deleting item:", err);
       showToast({
-        message: `Failed to delete "${itemName}": ${error.message}`,
+        message: `Failed to delete "${itemName}": ${err.message}`,
         type: "danger",
         title: "Error",
       });
@@ -252,7 +267,7 @@ const MySpace = () => {
           jsonResponse.message ||
           jsonResponse.folderName ||
           "Folder created successfully";
-      } catch (parseError) {
+      } catch {
         successMessage = responseText.replace(/^["']|["']$/g, "");
       }
 
@@ -268,10 +283,10 @@ const MySpace = () => {
       setFolderDescription("");
 
       await loadItems(searchTerm, currentFolderId);
-    } catch (error) {
-      console.error("Error creating folder:", error);
+    } catch (err) {
+      console.error("Error creating folder:", err);
       const errorMessage =
-        error.message || "Failed to create folder. Please try again.";
+        err.message || "Failed to create folder. Please try again.";
       setFolderCreateError(errorMessage);
       showToast({
         message: errorMessage,
@@ -291,19 +306,12 @@ const MySpace = () => {
     setFolderCreateError(null);
   };
 
-  const getPortalURL = () => {
-    if (window?.Liferay?.ThemeDisplay?.getPortalURL) {
-      return window.Liferay.ThemeDisplay.getPortalURL();
-    }
-    return `${window.location.protocol}//${window.location.host}`;
-  };
-
-  const getHeaders = () => {
-    const csrfToken = window?.Liferay?.authToken || "";
-    return {
-      "x-csrf-token": csrfToken,
-      "Content-Type": "application/json",
-    };
+  const getCurrentFolderName = () => {
+    if (currentFolderId === null) return "Root";
+    const currentFolder = mySpaceItems.find(
+      (item) => item.id === currentFolderId && item.type === "folder",
+    );
+    return currentFolder ? currentFolder.name : "Current Folder";
   };
 
   const handleFolderClick = (folder) => {
@@ -317,7 +325,6 @@ const MySpace = () => {
 
     setCurrentFolderId(folder.id);
     setSearchTerm("");
-    setSearchInput("");
 
     showToast({
       message: `Opened folder: ${folder.name}`,
@@ -334,7 +341,6 @@ const MySpace = () => {
       setCurrentFolderId(lastFolder.id);
       setFolderHistory(newHistory);
       setSearchTerm("");
-      setSearchInput("");
 
       showToast({
         message: `Navigated back to ${lastFolder.name}`,
@@ -345,7 +351,6 @@ const MySpace = () => {
     } else {
       setCurrentFolderId(null);
       setSearchTerm("");
-      setSearchInput("");
 
       showToast({
         message: "Navigated back to Root",
@@ -356,49 +361,12 @@ const MySpace = () => {
     }
   };
 
-  const getCurrentFolderName = () => {
-    if (currentFolderId === null) return "Root";
-    const currentFolder = mySpaceItems.find(
-      (item) => item.id === currentFolderId && item.type === "folder",
-    );
-    return currentFolder ? currentFolder.name : "Current Folder";
-  };
-
-  // const handleAddNew = () => {
-  //   navigate("/myspace/form", {
-
-  //     state: {
-  //       folderId: currentFolderId,
-  //       refresh: true,
-  //       parentFolderId: currentFolderId,
-  //     },
-  //   });
-  // };
-
-  // const handleEdit = (item) => {
-  //   setOpenDropdownId(null);
-  //   if (item.type === "folder") {
-  //     handleFolderClick(item);
-  //   } else {
-  //     navigate(`/myspace/form/${item.id}`, {
-  //       state: {
-  //         documentData: item,
-  //         isEditMode: true,
-  //         refresh: true,
-  //         parentFolderId: currentFolderId,
-  //       },
-  //     });
-  //   }
-  // };
   const handleAddNew = () => {
-    // Store the folderId and parentFolderId in sessionStorage
     if (currentFolderId) {
       sessionStorage.setItem("parentFolderId", currentFolderId);
       sessionStorage.setItem("folderId", currentFolderId);
     }
-
-    // Navigate using window.location.href
-    window.location.href = `/add-form#/myspace/form`;
+    navigate("/myspace/form");
   };
 
   const handleEdit = (item) => {
@@ -406,7 +374,6 @@ const MySpace = () => {
     if (item.type === "folder") {
       handleFolderClick(item);
     } else {
-      // Store document data in sessionStorage before navigation
       const documentData = {
         id: item.id,
         name: item.name,
@@ -414,7 +381,6 @@ const MySpace = () => {
         title: item.title,
         description: item.description,
         externalReferenceCode: item.externalReferenceCode,
-        // Add any other necessary fields
       };
 
       sessionStorage.setItem("editDocumentData", JSON.stringify(documentData));
@@ -422,9 +388,7 @@ const MySpace = () => {
       if (currentFolderId) {
         sessionStorage.setItem("parentFolderId", currentFolderId);
       }
-
-      // Navigate using window.location.href
-      window.location.href = `/add-form#/myspace/form/${item.id}`;
+      navigate(`/myspace/form/${item.id}`);
     }
   };
 
@@ -437,11 +401,12 @@ const MySpace = () => {
       autoClose: 2000,
     });
   };
+
   const toggleDropdown = (itemId) => {
     setOpenDropdownId((prev) => (prev === itemId ? null : itemId));
   };
 
-  const getStatusIcon = (type, status) => {
+  const getStatusIcon = (type) => {
     if (type === "folder") return "📁";
     return "📄";
   };
@@ -503,988 +468,557 @@ const MySpace = () => {
   };
 
   return (
-    <section className="main-section p-4 myspace-container">
-      <div className="my-space-header">
-        <h1>My Space</h1>
-        <div className="header-actions">
-          {apiActions.createFolder && (
-            <button
-              className="btn btn-outline"
-              style={{
-                backgroundColor: "#28a745",
-                color: "white",
-                borderColor: "#28a745",
+    <Box component="section" sx={{ p: 3, width: "100%" }}>
+      {/* Header */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 2,
+          mb: 3,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, color: boiBlue }}>
+            My Space
+          </Typography>
+          {currentFolderId && (
+            <Box
+              component="span"
+              sx={{
+                fontSize: 13,
+                bgcolor: "#e9ecef",
+                px: 1.5,
+                py: 0.5,
+                borderRadius: "16px",
+                color: "text.secondary",
               }}
+            >
+              📁 {getCurrentFolderName()}
+            </Box>
+          )}
+        </Box>
+
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+          <Box sx={{ width: 220 }}>
+            <CustomTextField
+              size="small"
+              placeholder="Search documents..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </Box>
+
+          {apiActions.createFolder && (
+            <Button
+              variant="contained"
+              color="success"
               onClick={() => setShowCreateFolderModal(true)}
+              sx={{ textTransform: "none", borderRadius: "8px" }}
             >
               📁 Create Folder
-            </button>
+            </Button>
           )}
 
           {apiActions.uploadFile && (
-            <button
-              className="btn btn-outline"
-              style={{
-                backgroundColor: "#0066B3",
-                color: "white",
-                borderColor: "#0066B3",
-              }}
+            <Button
+              variant="contained"
               onClick={handleAddNew}
+              sx={{
+                bgcolor: boiBlue,
+                color: "#fff",
+                textTransform: "none",
+                borderRadius: "8px",
+              }}
             >
               + Add New
-            </button>
+            </Button>
           )}
 
           {(folderHistory.length > 0 || currentFolderId !== null) && (
-            <button className="btn-back" onClick={handleGoBack}>
+            <Button
+              variant="outlined"
+              onClick={handleGoBack}
+              sx={{
+                textTransform: "none",
+                borderRadius: "8px",
+                borderColor: boiBorder,
+                color: "text.primary",
+              }}
+            >
               ← Back
-            </button>
+            </Button>
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      <div className="shadowBox">
-        <div className="my-space-content">
-          {loading && (
-            <div className="loading-state">
-              <div className="spinner"></div>
-              <p>Loading items...</p>
-            </div>
-          )}
+      {/* Main Content Card */}
+      <Box
+        sx={{
+          p: 3,
+          bgcolor: "#fff",
+          borderRadius: "12px",
+          border: `1px solid ${boiBorder}`,
+          boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+        }}
+      >
+        {loading && (
+          <Box sx={{ textAlign: "center", py: 8 }}>
+            <CircularProgress size={40} sx={{ color: boiBlue, mb: 2 }} />
+            <Typography sx={{ color: "text.secondary" }}>Loading items...</Typography>
+          </Box>
+        )}
 
-          {error && !loading && (
-            <div className="error-state">
-              <div className="error-icon">⚠️</div>
-              <h3>Error Loading Items</h3>
-              <p>{error}</p>
-              <button className="btn-retry" onClick={handleRefresh}>
-                Try Again
-              </button>
-            </div>
-          )}
+        {error && !loading && (
+          <Box sx={{ textAlign: "center", py: 8 }}>
+            <Box sx={{ fontSize: 48, mb: 1 }}>⚠️</Box>
+            <Typography variant="h6" sx={{ color: boiErrorRed, mb: 1 }}>
+              Error Loading Items
+            </Typography>
+            <Typography sx={{ color: "text.secondary", mb: 2 }}>{error}</Typography>
+            <Button variant="outlined" onClick={handleRefresh}>
+              Try Again
+            </Button>
+          </Box>
+        )}
 
-          {!loading && !error && (
-            <div className="cards-grid">
-              {mySpaceItems.length > 0 ? (
-                mySpaceItems.map((item) => (
-                  <div
-                    key={`${item.type}-${item.id}`}
-                    className={`card-item ${item.type === "folder" ? "folder-item" : "file-item"}`}
-                    onClick={() => {
-                      if (openDropdownId !== item.id) {
-                        handleEdit(item);
-                      }
+        {!loading && !error && (
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+              gap: 2.5,
+            }}
+          >
+            {mySpaceItems.length > 0 ? (
+              mySpaceItems.map((item) => (
+                <Box
+                  key={`${item.type}-${item.id}`}
+                  sx={{
+                    p: 2,
+                    borderRadius: "10px",
+                    border: `1px solid ${boiBorder}`,
+                    bgcolor: item.type === "folder" ? "#fbfdff" : "#fff",
+                    transition: "all 0.2s ease",
+                    cursor: "pointer",
+                    position: "relative",
+                    "&:hover": {
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                      borderColor: boiBlue,
+                    },
+                  }}
+                  onClick={() => {
+                    if (openDropdownId !== item.id) {
+                      handleEdit(item);
+                    }
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      mb: 1.5,
                     }}
                   >
-                    <div className="card-header">
-                      <div className="card-icon">
-                        {item.type === "folder"
-                          ? getStatusIcon(item.type, item.status)
-                          : getFileIcon(item.fileExtension)}
-                      </div>
-                      <div className="card-actions">
-                        {item.type === "file" && (
-                          <div
-                            className="dropdown"
+                    <Box sx={{ fontSize: 28 }}>
+                      {item.type === "folder"
+                        ? getStatusIcon(item.type)
+                        : getFileIcon(item.fileExtension)}
+                    </Box>
+                    <Box sx={{ position: "relative" }}>
+                      {item.type === "file" && (
+                        <Box
+                          className="dropdown"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        >
+                          <Button
+                            size="small"
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
+                              toggleDropdown(item.id);
+                            }}
+                            sx={{
+                              minWidth: 32,
+                              p: 0.5,
+                              color: "text.secondary",
+                              fontSize: 18,
                             }}
                           >
-                            <button
-                              className="dropdown-toggle-btn"
+                            ⋮
+                          </Button>
+                          {openDropdownId === item.id && (
+                            <Box
+                              sx={{
+                                position: "absolute",
+                                right: 0,
+                                top: "100%",
+                                bgcolor: "#fff",
+                                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                                borderRadius: "8px",
+                                p: 0.5,
+                                zIndex: 20,
+                                minWidth: 140,
+                                border: `1px solid ${boiBorder}`,
+                              }}
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                toggleDropdown(item.id);
                               }}
-                              title="More options"
                             >
-                              ⋮
-                            </button>
-                            {openDropdownId === item.id && (
-                              <div
-                                className="dropdown-menu"
+                              <Button
+                                fullWidth
+                                size="small"
+                                sx={{
+                                  justifyContent: "flex-start",
+                                  textTransform: "none",
+                                  color: "text.primary",
+                                  px: 1.5,
+                                  py: 0.75,
+                                }}
                                 onClick={(e) => {
-                                  e.preventDefault();
                                   e.stopPropagation();
+                                  handleViewHistory(item.externalReferenceCode);
                                 }}
                               >
-                                <button
-                                  className="dropdown-item"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleViewHistory(
-                                      item.externalReferenceCode,
-                                    );
-                                  }}
-                                >
-                                  📜 View History
-                                </button>
-                                <button
-                                  className="dropdown-item delete"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDelete(
-                                      item.externalReferenceCode,
-                                      item.name,
-                                    );
-                                  }}
-                                >
-                                  🗑️ Delete
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="card-body">
-                      <h3 className="card-title">
-                        {item.type === "folder"
-                          ? item.name
-                          : item.fileName || item.name || item.title}
-                      </h3>
-
-                      {item.type === "folder" ? (
-                        <div className="folder-info">
-                          <p className="card-description">
-                            {item.parsedDescription?.description ||
-                              item.description ||
-                              "Click to open folder"}
-                          </p>
-                        </div>
-                      ) : (
-                        <>
-                          {item.title && item.title !== item.fileName && (
-                            <div className="file-title">
-                              <span className="meta-label">Title:</span>
-                              <span className="meta-value">{item.title}</span>
-                            </div>
+                                📜 View History
+                              </Button>
+                              <Button
+                                fullWidth
+                                size="small"
+                                sx={{
+                                  justifyContent: "flex-start",
+                                  textTransform: "none",
+                                  color: boiErrorRed,
+                                  px: 1.5,
+                                  py: 0.75,
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(
+                                    item.externalReferenceCode,
+                                    item.name,
+                                  );
+                                }}
+                              >
+                                🗑️ Delete
+                              </Button>
+                            </Box>
                           )}
-
-                          <div className="file-meta">
-                            {item.fileExtension && (
-                              <span className="file-extension-badge">
-                                {item.fileExtension.toUpperCase()}
-                              </span>
-                            )}
-                            {item.sizeInBytes && (
-                              <span className="file-size">
-                                {formatFileSize(item.sizeInBytes)}
-                              </span>
-                            )}
-                          </div>
-
-                          {item.parsedDescription &&
-                            typeof item.parsedDescription === "object" && (
-                              <div className="card-meta">
-                                {item.parsedDescription.docType && (
-                                  <span className="meta-item">
-                                    <span className="meta-label">Type:</span>
-                                    <span className="meta-value">
-                                      {item.parsedDescription.docType}
-                                    </span>
-                                  </span>
-                                )}
-                                {item.parsedDescription.category && (
-                                  <span className="meta-item">
-                                    <span className="meta-label">
-                                      Category:
-                                    </span>
-                                    <span className="meta-value">
-                                      {item.parsedDescription.category}
-                                    </span>
-                                  </span>
-                                )}
-                                {item.keywords && item.keywords.length > 0 && (
-                                  <div className="keywords-container">
-                                    {item.keywords.map((keyword, idx) => (
-                                      <span key={idx} className="keyword-tag">
-                                        #{keyword}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                        </>
+                        </Box>
                       )}
+                    </Box>
+                  </Box>
 
-                      {item.modifiedDate && (
-                        <div className="last-modified">
-                          Modified: {formatDate(item.modifiedDate)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="empty-state">
-                  <div className="empty-state-icon">
-                    {currentFolderId ? "📂" : "📄"}
-                  </div>
-                  <h3>No Items Found</h3>
-                  <p>
-                    {searchTerm
-                      ? `No items match your search "${searchTerm}". Try different keywords.`
-                      : currentFolderId
-                        ? 'This folder is empty. Click "Create Folder" or "Add New" to add items.'
-                        : 'Click "Create Folder" or "Add New" to get started.'}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+                  <Box>
+                    <Typography
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: 14,
+                        mb: 0.5,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        color: item.type === "folder" ? boiBlue : "text.primary",
+                      }}
+                      title={item.name}
+                    >
+                      {item.type === "folder"
+                        ? item.name
+                        : item.fileName || item.name || item.title}
+                    </Typography>
+
+                    {item.type === "folder" ? (
+                      <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
+                        {item.parsedDescription?.description ||
+                          item.description ||
+                          "Folder"}
+                      </Typography>
+                    ) : (
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                          {item.fileExtension && (
+                            <Box
+                              component="span"
+                              sx={{
+                                fontSize: 10,
+                                fontWeight: 700,
+                                bgcolor: "#e9ecef",
+                                px: 0.75,
+                                py: 0.25,
+                                borderRadius: "4px",
+                                color: "#495057",
+                              }}
+                            >
+                              {item.fileExtension.toUpperCase()}
+                            </Box>
+                          )}
+                          {item.sizeInBytes && (
+                            <Typography sx={{ fontSize: 11, color: "text.secondary" }}>
+                              {formatFileSize(item.sizeInBytes)}
+                            </Typography>
+                          )}
+                        </Box>
+
+                        {item.parsedDescription?.docType && (
+                          <Typography sx={{ fontSize: 11, color: "text.secondary" }}>
+                            Type: {item.parsedDescription.docType}
+                          </Typography>
+                        )}
+                      </Box>
+                    )}
+
+                    {item.modifiedDate && (
+                      <Typography
+                        sx={{
+                          fontSize: 11,
+                          color: "text.secondary",
+                          mt: 1,
+                          pt: 0.5,
+                          borderTop: "1px dashed #eee",
+                        }}
+                      >
+                        {formatDate(item.modifiedDate)}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              ))
+            ) : (
+              <Box
+                sx={{
+                  gridColumn: "1 / -1",
+                  textAlign: "center",
+                  py: 8,
+                }}
+              >
+                <Box sx={{ fontSize: 48, mb: 1 }}>
+                  {currentFolderId ? "📂" : "📄"}
+                </Box>
+                <Typography variant="h6" sx={{ color: "text.secondary", mb: 0.5 }}>
+                  No Items Found
+                </Typography>
+                <Typography sx={{ color: "text.secondary", fontSize: 13 }}>
+                  {searchTerm
+                    ? `No items match your search "${searchTerm}".`
+                    : currentFolderId
+                      ? 'This folder is empty. Click "Create Folder" or "Add New" to add items.'
+                      : 'Click "Create Folder" or "Add New" to get started.'}
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        )}
+      </Box>
 
       {/* History Modal */}
       {showHistoryModal && (
-        <div
-          className="modal-overlay"
-          onClick={() => setShowHistoryModal(false)}
+        <Box
+          sx={{
+            position: "fixed",
+            inset: 0,
+            bgcolor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1300,
+          }}
+          onClick={() => setShowCreateFolderModal(false)}
         >
-          <div
-            className="modal-content history-modal"
+          <Box
+            sx={{
+              bgcolor: "#fff",
+              borderRadius: "12px",
+              p: 3,
+              maxWidth: 480,
+              width: "90%",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="modal-header">
-              <h2>Version History</h2>
-              <button
-                className="modal-close"
-                onClick={() => setShowHistoryModal(false)}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Version History
+              </Typography>
+              <Button
+                size="small"
+                onClick={() => setShowCreateFolderModal(false)}
+                sx={{ minWidth: 32, p: 0.5 }}
               >
                 ×
-              </button>
-            </div>
-            <div className="modal-body">
+              </Button>
+            </Box>
+            <Box>
               {loadingHistory ? (
-                <div className="loading-state">
-                  <div className="spinner"></div>
-                  <p>Loading history...</p>
-                </div>
+                <CircularProgress size={24} />
               ) : historyData && historyData.length > 0 ? (
-                <div className="history-list">
-                  {historyData.map((version, index) => (
-                    <div key={index} className="history-item">
-                      <div className="history-version">
-                        Version {version.version || index + 1}
-                      </div>
-                      <div className="history-date">
-                        {formatDate(
-                          version.modifiedDate || version.createdDate,
-                        )}
-                      </div>
-                      {version.size && (
-                        <div className="history-size">
-                          {formatFileSize(version.size)}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                historyData.map((version, index) => (
+                  <Box key={index} sx={{ py: 1, borderBottom: "1px solid #eee" }}>
+                    <Typography sx={{ fontWeight: 600 }}>
+                      Version {version.version || index + 1}
+                    </Typography>
+                    <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
+                      {formatDate(version.modifiedDate || version.createdDate)}
+                    </Typography>
+                  </Box>
+                ))
               ) : (
-                <div className="empty-state">
-                  <p>No version history available</p>
-                </div>
+                <Typography sx={{ color: "text.secondary" }}>
+                  No version history available
+                </Typography>
               )}
-            </div>
-          </div>
-        </div>
+            </Box>
+          </Box>
+        </Box>
       )}
 
+      {/* Create Folder Modal */}
       {showCreateFolderModal && (
-        <div className="modal-overlay" onClick={handleCloseModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Create New Folder</h2>
-              <button className="modal-close" onClick={handleCloseModal}>
+        <Box
+          sx={{
+            position: "fixed",
+            inset: 0,
+            bgcolor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1300,
+          }}
+          onClick={handleCloseModal}
+        >
+          <Box
+            sx={{
+              bgcolor: "#fff",
+              borderRadius: "12px",
+              p: 3.5,
+              maxWidth: 460,
+              width: "90%",
+              boxShadow: "0 8px 28px rgba(0,0,0,0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2.5,
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 700, color: boiBlue }}>
+                Create New Folder
+              </Typography>
+              <Button
+                size="small"
+                onClick={handleCloseModal}
+                sx={{ minWidth: 32, p: 0.5, fontSize: 20, color: "text.secondary" }}
+              >
                 ×
-              </button>
-            </div>
-            <div className="modal-body">
-              {folderCreateError && (
-                <div className="error-message">⚠️ {folderCreateError}</div>
-              )}
+              </Button>
+            </Box>
 
-              <div className="form-group">
-                <label htmlFor="folderName">
-                  Folder Name <span className="required">*</span>
-                </label>
-                <input
-                  id="folderName"
-                  type="text"
-                  value={folderName}
-                  onChange={(e) => setFolderName(e.target.value)}
-                  placeholder="Enter folder name"
-                  autoFocus
-                  disabled={creatingFolder}
-                />
-              </div>
+            {folderCreateError && (
+              <Box
+                sx={{
+                  p: 1.5,
+                  mb: 2,
+                  bgcolor: "#ffebee",
+                  borderRadius: "8px",
+                  color: boiErrorRed,
+                  fontSize: 13,
+                }}
+              >
+                ⚠️ {folderCreateError}
+              </Box>
+            )}
 
-              <div className="form-group">
-                <label htmlFor="folderDescription">Folder Description</label>
-                <textarea
-                  id="folderDescription"
-                  value={folderDescription}
-                  onChange={(e) => setFolderDescription(e.target.value)}
-                  placeholder="Enter folder description (optional)"
-                  rows="4"
-                  disabled={creatingFolder}
-                />
-              </div>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+              <CustomTextField
+                label="Folder Name"
+                required
+                value={folderName}
+                onChange={(e) => setFolderName(e.target.value)}
+                placeholder="Enter folder name"
+                disabled={creatingFolder}
+              />
+
+              <CustomTextField
+                label="Folder Description"
+                multiline
+                minRows={3}
+                value={folderDescription}
+                onChange={(e) => setFolderDescription(e.target.value)}
+                placeholder="Enter folder description (optional)"
+                disabled={creatingFolder}
+              />
 
               {currentFolderId && (
-                <div className="parent-folder-info">
-                  <span className="info-label">Parent Folder:</span>
-                  <span className="info-value">{getCurrentFolderName()}</span>
-                </div>
+                <Box
+                  sx={{
+                    p: 1.5,
+                    bgcolor: "#f8f9fa",
+                    borderRadius: "8px",
+                    fontSize: 12,
+                  }}
+                >
+                  <Box component="span" sx={{ color: "text.secondary", mr: 1 }}>
+                    Parent Folder:
+                  </Box>
+                  <Box component="span" sx={{ fontWeight: 600 }}>
+                    {getCurrentFolderName()}
+                  </Box>
+                </Box>
               )}
-            </div>
-            <div className="modal-footer">
-              <button
-                className="btn-cancel"
+            </Box>
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 1.5,
+                mt: 3,
+                pt: 2,
+                borderTop: `1px solid ${boiBorder}`,
+              }}
+            >
+              <Button
+                variant="outlined"
                 onClick={handleCloseModal}
                 disabled={creatingFolder}
+                sx={{ borderRadius: "8px", textTransform: "none" }}
               >
                 Cancel
-              </button>
-              <button
-                className="btn-create"
+              </Button>
+              <Button
+                variant="contained"
                 onClick={handleCreateFolder}
                 disabled={creatingFolder || !folderName.trim()}
+                sx={{
+                  bgcolor: boiBlue,
+                  borderRadius: "8px",
+                  textTransform: "none",
+                }}
               >
                 {creatingFolder ? "Creating..." : "Create Folder"}
-              </button>
-            </div>
-          </div>
-        </div>
+              </Button>
+            </Box>
+          </Box>
+        </Box>
       )}
-
-      <style>{`
-  /* Scope all styles under myspace-container */
-  .myspace-container .card-actions {
-    position: relative;
-    z-index: 100;
-  }
-
-  .myspace-container .dropdown {
-    position: relative;
-    display: inline-block;
-  }
-
-  .myspace-container .dropdown-toggle-btn {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-    color: #666;
-    font-weight: bold;
-    position: relative;
-    z-index: 10;
-  }
-
-  .myspace-container .dropdown-toggle-btn:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-  }
-
-  .myspace-container .dropdown-menu {
-    position: absolute;
-    right: 0;
-    top: 100%;
-    margin-top: 5px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    min-width: 160px;
-    z-index: 1000;
-    overflow: visible;
-    border: 1px solid #e0e0e0;
-    display: block;
-  }
-
-  .myspace-container .dropdown-item {
-    display: block;
-    width: 100%;
-    padding: 10px 16px;
-    text-align: left;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s;
-    color: #333;
-    white-space: nowrap;
-  }
-
-  .myspace-container .dropdown-item:hover {
-    background-color: #f5f5f5;
-  }
-
-  .myspace-container .dropdown-item.delete {
-    color: #dc3545;
-    border-top: 1px solid #e0e0e0;
-  }
-
-  .myspace-container .dropdown-item.delete:hover {
-    background-color: #ffe6e6;
-  }
-
-  .myspace-container .card-item {
-    position: relative;
-    z-index: 1;
-    overflow: visible !important;
-  }
-
-  .myspace-container .card-item:hover {
-    z-index: 2;
-  }
-  
-  .myspace-container .card-header {
-    overflow: visible !important;
-  }
-
-  /* All other styles also need to be scoped */
-  .myspace-container .history-modal {
-    max-width: 600px;
-  }
-
-  .myspace-container .history-list {
-    max-height: 400px;
-    overflow-y: auto;
-  }
-
-  .myspace-container .history-item {
-    padding: 12px;
-    border-bottom: 1px solid #e0e0e0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .myspace-container .history-item:last-child {
-    border-bottom: none;
-  }
-
-  .myspace-container .history-version {
-    font-weight: 600;
-    color: #0066B3;
-  }
-
-  .myspace-container .history-date {
-    font-size: 12px;
-    color: #666;
-  }
-
-  .myspace-container .history-size {
-    font-size: 12px;
-    color: #999;
-  }
-
-  .myspace-container .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    animation: fadeIn 0.2s ease;
-  }
-
-  .myspace-container .modal-content {
-    background: white;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    animation: slideUp 0.3s ease;
-  }
-
-  .myspace-container .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 24px;
-    border-bottom: 1px solid #e0e0e0;
-  }
-
-  .myspace-container .modal-header h2 {
-    margin: 0;
-    font-size: 20px;
-    color: #333;
-  }
-
-  .myspace-container .modal-close {
-    background: none;
-    border: none;
-    font-size: 28px;
-    cursor: pointer;
-    color: #999;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    transition: all 0.2s;
-  }
-
-  .myspace-container .modal-close:hover {
-    background-color: #f0f0f0;
-    color: #333;
-  }
-
-  .myspace-container .modal-body {
-    padding: 24px;
-  }
-
-  .myspace-container .form-group {
-    margin-bottom: 20px;
-  }
-
-  .myspace-container .form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: #333;
-    font-size: 14px;
-  }
-
-  .myspace-container .required {
-    color: #dc3545;
-  }
-
-  .myspace-container .form-group input,
-  .myspace-container .form-group textarea {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: border-color 0.2s;
-    font-family: inherit;
-  }
-
-  .myspace-container .form-group input:focus,
-  .myspace-container .form-group textarea:focus {
-    outline: none;
-    border-color: #0066B3;
-    box-shadow: 0 0 0 3px rgba(0, 102, 179, 0.1);
-  }
-
-  .myspace-container .form-group input:disabled,
-  .myspace-container .form-group textarea:disabled {
-    background-color: #f8f9fa;
-    cursor: not-allowed;
-  }
-
-  .myspace-container .parent-folder-info {
-    margin-top: 16px;
-    padding: 12px;
-    background-color: #f8f9fa;
-    border-radius: 6px;
-    font-size: 13px;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .myspace-container .info-label {
-    font-weight: 600;
-    color: #666;
-  }
-
-  .myspace-container .info-value {
-    color: #0066B3;
-  }
-
-  .myspace-container .error-message {
-    background-color: #f8d7da;
-    color: #721c24;
-    padding: 12px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-    font-size: 14px;
-    border: 1px solid #f5c6cb;
-  }
-
-  .myspace-container .modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    padding: 20px 24px;
-    border-top: 1px solid #e0e0e0;
-  }
-
-  .myspace-container .btn-cancel,
-  .myspace-container .btn-create {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s;
-  }
-
-  .myspace-container .btn-cancel {
-    background-color: #f8f9fa;
-    color: #6c757d;
-    border: 1px solid #dee2e6;
-  }
-
-  .myspace-container .btn-cancel:hover:not(:disabled) {
-    background-color: #e2e6ea;
-  }
-
-  .myspace-container .btn-create {
-    background-color: #28a745;
-    color: white;
-  }
-
-  .myspace-container .btn-create:hover:not(:disabled) {
-    background-color: #218838;
-    transform: translateY(-1px);
-  }
-
-  .myspace-container .btn-create:disabled,
-  .myspace-container .btn-cancel:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideUp {
-    from {
-      transform: translateY(20px);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-
-  /* My Space Styles */
-  .myspace-container .my-space-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 15px;
-  }
-
-  .myspace-container .my-space-header h1 {
-    margin: 0;
-    font-size: 24px;
-    color: #333;
-  }
-
-  .myspace-container .header-actions {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  .myspace-container .btn-back {
-    padding: 6px 12px;
-    background-color: #6c757d;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s;
-  }
-
-  .myspace-container .btn-back:hover {
-    background-color: #5a6268;
-  }
-
-  .myspace-container .my-space-content {
-    padding: 20px;
-  }
-
-  /* Loading State */
-  .myspace-container .loading-state {
-    text-align: center;
-    padding: 60px 20px;
-  }
-
-  .myspace-container .spinner {
-    width: 40px;
-    height: 40px;
-    margin: 0 auto 20px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #0066B3;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  /* Error State */
-  .myspace-container .error-state {
-    text-align: center;
-    padding: 60px 20px;
-  }
-
-  .myspace-container .error-icon {
-    font-size: 48px;
-    margin-bottom: 20px;
-  }
-
-  .myspace-container .btn-retry {
-    padding: 10px 20px;
-    background-color: #0066B3;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 20px;
-  }
-
-  .myspace-container .btn-retry:hover {
-    background-color: #0052a3;
-  }
-
-  /* Cards Grid */
-  .myspace-container .cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-  }
-
-  .myspace-container .card-item {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid #e0e0e0;
-  }
-
-  .myspace-container .card-item:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    border-color: #0066B3;
-  }
-
-  .myspace-container .card-header {
-    padding: 15px;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #dee2e6;
-  }
-
-  .myspace-container .card-icon {
-    font-size: 28px;
-  }
-
-  .myspace-container .card-actions {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .myspace-container .btn-icon {
-    width: 32px;
-    height: 32px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-
-  .myspace-container .btn-icon:hover {
-    transform: scale(1.1);
-  }
-
-  .myspace-container .btn-download {
-    background-color: #28a745;
-    color: white;
-  }
-
-  .myspace-container .btn-download:hover {
-    background-color: #218838;
-  }
-
-  .myspace-container .card-body {
-    padding: 20px;
-    flex: 1;
-  }
-
-  .myspace-container .card-title {
-    margin: 0 0 10px 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
-    word-break: break-word;
-  }
-
-  .myspace-container .card-description {
-    margin: 0 0 10px 0;
-    font-size: 13px;
-    color: #666;
-    line-height: 1.5;
-    word-break: break-word;
-  }
-
-  .myspace-container .file-title {
-    margin-bottom: 8px;
-    font-size: 13px;
-    color: #666;
-  }
-
-  .myspace-container .file-meta {
-    display: flex;
-    gap: 10px;
-    margin: 10px 0;
-    flex-wrap: wrap;
-  }
-
-  .myspace-container .file-extension-badge {
-    background-color: #e9ecef;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #495057;
-  }
-
-  .myspace-container .file-size {
-    font-size: 11px;
-    color: #6c757d;
-    background-color: #f8f9fa;
-    padding: 2px 8px;
-    border-radius: 4px;
-  }
-
-  .myspace-container .keywords-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-top: 8px;
-  }
-
-  .myspace-container .keyword-tag {
-    background-color: #e9ecef;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    color: #495057;
-  }
-
-  .myspace-container .card-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 10px;
-  }
-
-  .myspace-container .meta-item {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-  }
-
-  .myspace-container .meta-label {
-    color: #999;
-  }
-
-  .myspace-container .meta-value {
-    color: #333;
-    font-weight: 500;
-    text-align: right;
-    word-break: break-word;
-    max-width: 60%;
-  }
-
-  .myspace-container .last-modified {
-    margin-top: 10px;
-    font-size: 11px;
-    color: #999;
-    padding-top: 10px;
-    border-top: 1px solid #e0e0e0;
-  }
-
-  .myspace-container .empty-state {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 60px 20px;
-  }
-
-  .myspace-container .empty-state-icon {
-    font-size: 64px;
-    margin-bottom: 20px;
-    opacity: 0.5;
-  }
-
-  .myspace-container .empty-state h3 {
-    margin-bottom: 10px;
-    color: #666;
-  }
-
-  .myspace-container .empty-state p {
-    color: #999;
-  }
-
-  /* Responsive design */
-  @media (max-width: 768px) {
-    .myspace-container .cards-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .myspace-container .my-space-header {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .myspace-container .header-actions {
-      flex-direction: column;
-    }
-
-    .myspace-container .modal-content {
-      width: 95%;
-      margin: 20px;
-    }
-  }
-`}</style>
-    </section>
+    </Box>
   );
 };
 

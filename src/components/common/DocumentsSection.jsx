@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { docmetaDataFields } from "../headerData";
+import { docmetaDataFields } from "../../pages/VDMS/headerData";
 
 const DocumentsSection = ({ form, handleChange }) => {
   const docMetaRefs = useRef({});

@@ -1,156 +1,181 @@
-// FilterBar.js
+import React, { useState } from "react";
 import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import InputAdornment from "@mui/material/InputAdornment";
-import SearchIcon from "@mui/icons-material/Search";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import { useState } from "react";
-import { CustomAutocomplete } from "./CustomAutocomplete";
-import { CustomTextField } from "./CustomTextField";
-import {
-  boiBlue,
-  boiFilterBg,
-  boiBorder,
-  boiInputSoftBg,
-} from "../../theme/theme";
+import { formatDateForInput } from "../../pages/VDMS/headerData";
+import CustomAutocomplete from "./CustomAutocomplete";
+import CustomTextField from "./CustomTextField";
+import { boiBlue, boiBorder } from "../../theme/theme";
 
-const labelProps = {
-  shrink: true,
-  sx: {
-    color: boiBlue,
-    fontWeight: 700,
-    fontSize: 11,
-    letterSpacing: "0.06em",
-    textTransform: "uppercase",
-    "&.MuiInputLabel-shrink": { transform: "translate(12px, -8px) scale(1)" },
-  },
-};
-
-const fieldInputSx = {
-  "& .MuiOutlinedInput-root": {
-    bgcolor: boiInputSoftBg,
-    borderRadius: "10px",
-    "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: boiBlue },
-    "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderWidth: "1px" },
-  },
-};
-
-export function FilterBar({
-  statusOptions,
-  typeOptions,
-  sourceOptions,
+const Filters = ({
+  filters,
+  setFilters,
   onSearch,
   onReset,
-  showSourceFilter = true,
-}) {
-  const [status, setStatus] = useState(statusOptions?.[0] || "All Statuses");
-  const [reference, setReference] = useState("");
-  const [type, setType] = useState(typeOptions?.[0] || "All Types");
-  const [source, setSource] = useState(sourceOptions?.[0] || "All Sources");
+  statusOptions = [],
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const handleSearch = () => {
-    onSearch({ status, reference, type, source });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "search") {
+      const sanitizedValue = value
+        .trimStart()
+        .replace(/[^a-zA-Z0-9@&%$#!:";'{}[\]();\-_+=,.?/|\\`\s]/g, "");
+      setFilters((prev) => ({ ...prev, [name]: sanitizedValue }));
+    } else {
+      setFilters((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
-  const handleReset = () => {
-    setStatus(statusOptions?.[0] || "All Statuses");
-    setReference("");
-    setType(typeOptions?.[0] || "All Types");
-    setSource(sourceOptions?.[0] || "All Sources");
-    if (onReset) {
-      onReset();
+  const filterFields = [
+    {
+      name: "search",
+      label: "Search By Text",
+      type: "text",
+      pattern: "[a-zA-Z0-9@&%$#!:\";'{}\\[\\]();\\-_+=,.?/|\\\\`\\s]*",
+    },
+    {
+      name: "status",
+      label: "Status",
+      type: "select",
+      options: statusOptions,
+    },
+    {
+      name: "fromDate",
+      label: "From Date",
+      type: "date",
+    },
+    {
+      name: "toDate",
+      label: "To Date",
+      type: "date",
+    },
+  ];
+
+  const renderFilterField = (field) => {
+    switch (field.type) {
+      case "select":
+        return (
+          <CustomAutocomplete
+            label={field.label}
+            name={field.name}
+            value={filters[field.name] || ""}
+            onChange={handleChange}
+            options={field.options}
+          />
+        );
+      case "date":
+        return (
+          <CustomTextField
+            type="date"
+            label={field.label}
+            name={field.name}
+            value={
+              filters[field.name]
+                ? formatDateForInput(filters[field.name])
+                : ""
+            }
+            onChange={handleChange}
+          />
+        );
+      case "text":
+        return (
+          <CustomTextField
+            label={field.label}
+            name={field.name}
+            value={filters[field.name] || ""}
+            onChange={handleChange}
+            placeholder="Enter search text"
+            pattern={field.pattern}
+          />
+        );
+      default:
+        return null;
     }
   };
 
   return (
     <Box
       sx={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: 2,
-        alignItems: "flex-end",
-        bgcolor: boiFilterBg,
-        p: 2.25,
+        mb: 3,
+        p: 2.5,
+        bgcolor: "#fff",
         borderRadius: "12px",
         border: `1px solid ${boiBorder}`,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
       }}
     >
-      <Box sx={{ minWidth: 172, flex: "1 1 150px" }}>
-        <CustomAutocomplete
-          options={statusOptions || []}
-          value={status}
-          onChange={(_, v) =>
-            setStatus(v ?? (statusOptions?.[0] || "All Statuses"))
-          }
-          label="STATUS"
-          InputLabelProps={labelProps}
-          textFieldSx={fieldInputSx}
-        />
-      </Box>
-      <Box sx={{ minWidth: 208, flex: "1 1 190px" }}>
-        <CustomTextField
-          label="REFERENCE NUMBER"
-          placeholder="Reference Number"
-          value={reference}
-          onChange={(e) => setReference(e.target.value)}
-          InputLabelProps={labelProps}
-          sx={fieldInputSx}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <SearchIcon
-                  fontSize="small"
-                  sx={{ color: boiBlue, opacity: 0.7 }}
-                />
-              </InputAdornment>
-            ),
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: isCollapsed ? 0 : 2,
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 600, color: boiBlue }}>
+          Filters
+        </Typography>
+        <Button
+          size="small"
+          variant="outlined"
+          sx={{
+            minWidth: 32,
+            px: 1,
+            borderRadius: "6px",
+            borderColor: boiBorder,
           }}
-        />
+          onClick={() => setIsCollapsed(!isCollapsed)}
+        >
+          {isCollapsed ? "+" : "-"}
+        </Button>
       </Box>
-      <Box sx={{ minWidth: 172, flex: "1 1 150px" }}>
-        <CustomAutocomplete
-          options={typeOptions || []}
-          value={type}
-          onChange={(_, v) => setType(v ?? (typeOptions?.[0] || "All Types"))}
-          label="TYPE OF COMPLAINT"
-          InputLabelProps={labelProps}
-          textFieldSx={fieldInputSx}
-        />
-      </Box>
-      {showSourceFilter && (
-        <Box sx={{ minWidth: 172, flex: "1 1 150px" }}>
-          <CustomAutocomplete
-            options={sourceOptions || []}
-            value={source}
-            onChange={(_, v) =>
-              setSource(v ?? (sourceOptions?.[0] || "All Sources"))
-            }
-            label="SOURCE OF COMPLAINT"
-            InputLabelProps={labelProps}
-            textFieldSx={fieldInputSx}
-          />
+
+      {!isCollapsed && (
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, alignItems: "flex-end" }}>
+          {filterFields.map((field) => (
+            <Box
+              key={field.name}
+              sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 16px)", md: "1 1 200px" } }}
+            >
+              {renderFilterField(field)}
+            </Box>
+          ))}
+
+          <Box sx={{ display: "flex", gap: 1, flex: "0 0 auto", mt: { xs: 1, sm: 0 } }}>
+            <Button
+              variant="contained"
+              onClick={onSearch}
+              sx={{
+                bgcolor: boiBlue,
+                color: "#fff",
+                textTransform: "none",
+                borderRadius: "8px",
+                px: 2.5,
+              }}
+            >
+              Search
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={onReset}
+              sx={{
+                borderColor: boiBorder,
+                color: "text.secondary",
+                textTransform: "none",
+                borderRadius: "8px",
+                px: 2,
+              }}
+            >
+              Reset
+            </Button>
+          </Box>
         </Box>
       )}
-      <Button
-        variant="contained"
-        color="primary"
-        size="large"
-        startIcon={<SearchIcon />}
-        onClick={handleSearch}
-        sx={{ minHeight: 40, px: 2.5, borderRadius: "10px" }}
-      >
-        Search
-      </Button>
-      <Button
-        variant="outlined"
-        color="secondary"
-        size="large"
-        startIcon={<RestartAltIcon />}
-        onClick={handleReset}
-        sx={{ minHeight: 40, px: 2.5, borderRadius: "10px" }}
-      >
-        Reset
-      </Button>
     </Box>
   );
-}
+};
+
+export { Filters as FilterBar };
+export default Filters;
