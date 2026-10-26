@@ -183,7 +183,10 @@ const MySpace = () => {
     if (!confirmDelete) return;
 
     try {
-      showLoading(`Deleting "${itemName}"...`, "Please wait while we process the deletion");
+      showLoading(
+        `Deleting "${itemName}"...`,
+        "Please wait while we process the deletion",
+      );
       const portalURL = getPortalURL();
       const response = await fetch(
         `${portalURL}/o/combined-docs/actions/remove/${externalReferenceCode}`,
@@ -212,9 +215,7 @@ const MySpace = () => {
             successMsg = resText.replace(/^["']|["']$/g, "") || successMsg;
           }
         }
-      } catch {
-        // fallback to default success message
-      }
+      } catch {}
 
       showToast({
         message: successMsg,
@@ -247,7 +248,10 @@ const MySpace = () => {
     }
 
     try {
-      showLoading(`Creating folder "${folderName}"...`, "Please wait while folder is being created");
+      showLoading(
+        `Creating folder "${folderName}"...`,
+        "Please wait while folder is being created",
+      );
       setCreatingFolder(true);
       setFolderCreateError(null);
 
@@ -521,7 +525,14 @@ const MySpace = () => {
           )}
         </Box>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            flexWrap: "wrap",
+          }}
+        >
           <Box sx={{ width: 220 }}>
             <CustomTextField
               size="small"
@@ -574,7 +585,6 @@ const MySpace = () => {
         </Box>
       </Box>
 
-      {/* Main Content Card */}
       <Box
         sx={{
           p: 3,
@@ -587,7 +597,9 @@ const MySpace = () => {
         {loading && (
           <Box sx={{ textAlign: "center", py: 8 }}>
             <CircularProgress size={40} sx={{ color: boiBlue, mb: 2 }} />
-            <Typography sx={{ color: "text.secondary" }}>Loading items...</Typography>
+            <Typography sx={{ color: "text.secondary" }}>
+              Loading items...
+            </Typography>
           </Box>
         )}
 
@@ -597,7 +609,9 @@ const MySpace = () => {
             <Typography variant="h6" sx={{ color: boiErrorRed, mb: 1 }}>
               Error Loading Items
             </Typography>
-            <Typography sx={{ color: "text.secondary", mb: 2 }}>{error}</Typography>
+            <Typography sx={{ color: "text.secondary", mb: 2 }}>
+              {error}
+            </Typography>
             <Button variant="outlined" onClick={handleRefresh}>
               Try Again
             </Button>
@@ -745,7 +759,8 @@ const MySpace = () => {
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
-                        color: item.type === "folder" ? boiBlue : "text.primary",
+                        color:
+                          item.type === "folder" ? boiBlue : "text.primary",
                       }}
                       title={item.name}
                     >
@@ -755,14 +770,24 @@ const MySpace = () => {
                     </Typography>
 
                     {item.type === "folder" ? (
-                      <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
+                      <Typography
+                        sx={{ fontSize: 12, color: "text.secondary" }}
+                      >
                         {item.parsedDescription?.description ||
                           item.description ||
                           "Folder"}
                       </Typography>
                     ) : (
-                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 0.5,
+                        }}
+                      >
+                        <Box
+                          sx={{ display: "flex", gap: 1, alignItems: "center" }}
+                        >
                           {item.fileExtension && (
                             <Box
                               component="span"
@@ -780,14 +805,18 @@ const MySpace = () => {
                             </Box>
                           )}
                           {item.sizeInBytes && (
-                            <Typography sx={{ fontSize: 11, color: "text.secondary" }}>
+                            <Typography
+                              sx={{ fontSize: 11, color: "text.secondary" }}
+                            >
                               {formatFileSize(item.sizeInBytes)}
                             </Typography>
                           )}
                         </Box>
 
                         {item.parsedDescription?.docType && (
-                          <Typography sx={{ fontSize: 11, color: "text.secondary" }}>
+                          <Typography
+                            sx={{ fontSize: 11, color: "text.secondary" }}
+                          >
                             Type: {item.parsedDescription.docType}
                           </Typography>
                         )}
@@ -821,7 +850,10 @@ const MySpace = () => {
                 <Box sx={{ fontSize: 48, mb: 1 }}>
                   {currentFolderId ? "📂" : "📄"}
                 </Box>
-                <Typography variant="h6" sx={{ color: "text.secondary", mb: 0.5 }}>
+                <Typography
+                  variant="h6"
+                  sx={{ color: "text.secondary", mb: 0.5 }}
+                >
                   No Items Found
                 </Typography>
                 <Typography sx={{ color: "text.secondary", fontSize: 13 }}>
@@ -837,9 +869,6 @@ const MySpace = () => {
         )}
       </Box>
 
-
-
-      {/* Create Folder Modal */}
       {showCreateFolderModal && (
         <Box
           sx={{
@@ -878,7 +907,12 @@ const MySpace = () => {
               <Button
                 size="small"
                 onClick={handleCloseModal}
-                sx={{ minWidth: 32, p: 0.5, fontSize: 20, color: "text.secondary" }}
+                sx={{
+                  minWidth: 32,
+                  p: 0.5,
+                  fontSize: 20,
+                  color: "text.secondary",
+                }}
               >
                 ×
               </Button>

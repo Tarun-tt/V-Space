@@ -1,4 +1,3 @@
-// FileVersionHistory.jsx
 import React, { useState, useEffect, useCallback, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
@@ -78,7 +77,10 @@ const FileVersionHistory = () => {
   const fetchVersionHistory = useCallback(async () => {
     try {
       setLoading(true);
-      showLoading("Loading version history...", "Fetching versions from server");
+      showLoading(
+        "Loading version history...",
+        "Fetching versions from server",
+      );
       const portalURL = getPortalURL();
       const response = await fetch(
         `${portalURL}/o/combined-docs/items/file-versions/${externalReferenceCode}?page=${page}&pageSize=${pageSize}`,
@@ -141,7 +143,15 @@ const FileVersionHistory = () => {
       setLoading(false);
       hideLoading();
     }
-  }, [externalReferenceCode, page, pageSize, fileInfo, showLoading, hideLoading, showToast]);
+  }, [
+    externalReferenceCode,
+    page,
+    pageSize,
+    fileInfo,
+    showLoading,
+    hideLoading,
+    showToast,
+  ]);
 
   useEffect(() => {
     if (externalReferenceCode) {
@@ -161,10 +171,7 @@ const FileVersionHistory = () => {
   const handleDownload = async (friendlyUrlPath, fileName, version) => {
     try {
       setDownloading(true);
-      showLoading(
-        `Downloading version ${version}...`,
-        `Preparing ${fileName}`
-      );
+      showLoading(`Downloading version ${version}...`, `Preparing ${fileName}`);
       const portalURL = getPortalURL();
       const downloadUrl = `${portalURL}${friendlyUrlPath}`;
 
@@ -401,13 +408,17 @@ const FileVersionHistory = () => {
               <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
                 File Name:
               </Typography>
-              <Typography sx={{ fontWeight: 600 }}>{fileInfo.fileName}</Typography>
+              <Typography sx={{ fontWeight: 600 }}>
+                {fileInfo.fileName}
+              </Typography>
             </Box>
             <Box>
               <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
                 Title:
               </Typography>
-              <Typography sx={{ fontWeight: 600 }}>{fileInfo.title || "-"}</Typography>
+              <Typography sx={{ fontWeight: 600 }}>
+                {fileInfo.title || "-"}
+              </Typography>
             </Box>
             <Box>
               <Typography sx={{ fontSize: 12, color: "text.secondary" }}>

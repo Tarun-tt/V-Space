@@ -123,8 +123,8 @@ class WebComponent extends HTMLElement {
   }
 }
 
-const ELEMENT_NAME = "my-space";
-// const ELEMENT_NAME = "my-spaceform";
+// const ELEMENT_NAME = "my-space";
+const ELEMENT_NAME = "my-spaceform";
 
 const isDevelopment = import.meta.env.DEV;
 
@@ -138,8 +138,8 @@ if (isDevelopment) {
 
   rootElement.innerHTML = "";
 
-  renderApp(rootElement, "/my-space");
-  // renderApp(rootElement, "/my-spaceform");
+  // renderApp(rootElement, "/my-space");
+  renderApp(rootElement, "/my-spaceform");
 } else {
   if (!customElements.get(ELEMENT_NAME)) {
     customElements.define(ELEMENT_NAME, WebComponent);

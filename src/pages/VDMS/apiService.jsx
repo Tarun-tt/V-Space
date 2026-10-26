@@ -1,5 +1,3 @@
-// };
-
 const BASE_URL = "";
 
 const getHeaders = () => {
@@ -111,31 +109,6 @@ export const fetchDocuments = async ({
     throw error;
   }
 };
-// export const submitDocument = async (formData) => {
-//   try {
-//     const response = await fetch(
-//       `${BASE_URL}/o/headless-delivery/v1.0/document-folders/110857/documents`,
-//       {
-//         method: "POST",
-//         headers: {
-//           accept: "application/json",
-//           ...getHeaders(),
-//         },
-//         body: formData,
-//       },
-//     );
-
-//     if (!response.ok) {
-//       const error = await response.text();
-//       throw new Error(error);
-//     }
-
-//     return await response.json();
-//   } catch (error) {
-//     console.error("Failed to submit document:", error);
-//     throw error;
-//   }
-// };
 
 export const formatAPIDate = (dateString) => {
   if (!dateString) return "";

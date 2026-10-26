@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState, useCallback, useContext } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useContext,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -157,7 +163,10 @@ const MySpaceForm = () => {
         setForm(updatedForm);
         initialFormState.current = updatedForm;
 
-        if (window.integrateFile && typeof window.integrateFile === "function") {
+        if (
+          window.integrateFile &&
+          typeof window.integrateFile === "function"
+        ) {
           window.integrateFile(documentData);
         }
 
@@ -234,7 +243,10 @@ const MySpaceForm = () => {
     window.updateDocMetaField = (name, value) => {
       if (name === "file") {
         if (value instanceof Blob || value instanceof File) {
-          showLoading("Loading attachment...", "Processing attachment for preview");
+          showLoading(
+            "Loading attachment...",
+            "Processing attachment for preview",
+          );
           try {
             let fileName = value.name || "scanned_document";
 
@@ -430,7 +442,7 @@ const MySpaceForm = () => {
       setIsSubmitting(true);
       showLoading(
         isEditMode ? "Updating document..." : "Submitting document...",
-        "Uploading document and metadata to server"
+        "Uploading document and metadata to server",
       );
 
       const submitData = prepareSubmitFormData();
@@ -562,7 +574,10 @@ const MySpaceForm = () => {
           {/* Left Panel */}
           <Box sx={{ flex: { xs: "1 1 100%", md: "0 0 38%" } }}>
             <Box sx={{ position: "relative" }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: boiBlue }}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: 600, mb: 2, color: boiBlue }}
+              >
                 Meta Data
               </Typography>
 

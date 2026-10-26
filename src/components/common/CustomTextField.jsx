@@ -40,7 +40,13 @@ const toDayjs = (value) => {
 const RequiredAsterisk = () => (
   <Typography
     component={Box}
-    sx={{ color: boiErrorRed, fontSize: "1.2rem", lineHeight: 1, ml: 0.5, display: "inline" }}
+    sx={{
+      color: boiErrorRed,
+      fontSize: "1.2rem",
+      lineHeight: 1,
+      ml: 0.5,
+      display: "inline",
+    }}
   >
     *
   </Typography>
@@ -402,7 +408,7 @@ export function CustomTextField({
                 if (showLoading) {
                   showLoading(
                     `Uploading attachment "${file.name}"...`,
-                    "Processing and attaching document"
+                    "Processing and attaching document",
                   );
                 }
                 try {
