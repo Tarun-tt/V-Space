@@ -17,37 +17,81 @@ import {
 import DocumentPreview from "../CommonComponent/DocumentPreview";
 import showToast from "../CommonComponent/ToastMessage";
 import { useParams, useLocation } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 
 const MySpaceForm = () => {
   const { id } = useParams();
   const location = useLocation();
-  const navigate = useNavigate();
   const [isDirty, setIsDirty] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const initialFormState = useRef(getInitialFormState());
-  const parentFolderId = location.state?.parentFolderId || "";
 
-  const documentData = location.state?.documentData;
-  const isEditMode = location.state?.isEditMode || false;
+  // Get data from sessionStorage instead of location.state
+  const [parentFolderId, setParentFolderId] = useState("");
+  const [documentData, setDocumentData] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const [form, setForm] = useState({
     ...getInitialFormState(),
     date: new Date().toISOString().split("T")[0],
     uploadedFile: null,
-    parentFolderId: parentFolderId,
+    parentFolderId: "",
   });
+
+  // Retrieve data from sessionStorage on component mount
   useEffect(() => {
-    if (!sessionStorage.getItem("myspaceFormLoaded")) {
+    // Get parent folder ID
+    const storedParentFolderId = sessionStorage.getItem("parentFolderId");
+    if (storedParentFolderId) {
+      setParentFolderId(storedParentFolderId);
+      setForm((prev) => ({
+        ...prev,
+        parentFolderId: storedParentFolderId,
+      }));
+    }
+
+    // Check if in edit mode
+    const editMode = sessionStorage.getItem("isEditMode") === "true";
+    setIsEditMode(editMode);
+
+    // Get document data if in edit mode
+    if (editMode) {
+      const storedDocumentData = sessionStorage.getItem("editDocumentData");
+      if (storedDocumentData) {
+        try {
+          const parsedData = JSON.parse(storedDocumentData);
+          setDocumentData(parsedData);
+        } catch (error) {
+          console.error("Error parsing document data:", error);
+        }
+      }
+    }
+
+    // Clean up sessionStorage after retrieving (optional - keep if needed for page refresh)
+    // If you want to clear after navigation, uncomment the following lines
+    // return () => {
+    //   sessionStorage.removeItem("parentFolderId");
+    //   sessionStorage.removeItem("folderId");
+    //   sessionStorage.removeItem("isEditMode");
+    //   sessionStorage.removeItem("editDocumentData");
+    // };
+  }, []);
+
+  // Handle page reload prevention (remove the reload logic if not needed)
+  useEffect(() => {
+    // Remove the automatic reload logic that was causing issues
+    // This was previously forcing a page reload on every load
+    const formLoaded = sessionStorage.getItem("myspaceFormLoaded");
+    if (!formLoaded) {
       sessionStorage.setItem("myspaceFormLoaded", "true");
-      window.location.reload();
+      // Optionally, you can keep this or remove it
+      // window.location.reload();
     }
 
     return () => {
       setTimeout(() => {
         sessionStorage.removeItem("myspaceFormLoaded");
-      }, 100);
+      }, 10);
     };
   }, []);
 
@@ -57,16 +101,18 @@ const MySpaceForm = () => {
     classificationOptions: classificationOptions,
     tagOptions: tagOptions,
   };
+
   useEffect(() => {
     if (!isInitialized) {
       console.log("Initializing window functions...");
-      console.log("Parent Folder ID from state:", parentFolderId);
+      console.log("Parent Folder ID from sessionStorage:", parentFolderId);
 
       window.currentParentFolderId = parentFolderId;
 
       setIsInitialized(true);
     }
   }, [isInitialized, parentFolderId]);
+
   const [errors, setErrors] = useState({});
   const [isScanModalOpen, setScanModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -101,7 +147,10 @@ const MySpaceForm = () => {
     if (isEditMode && documentData) {
       setIsLoading(true);
       try {
-        console.log("Document data received:", documentData);
+        console.log(
+          "Document data received from sessionStorage:",
+          documentData,
+        );
 
         const metadata = parseDescriptionMetadata(documentData.description);
 
@@ -126,11 +175,13 @@ const MySpaceForm = () => {
           decision: metadata?.decision || "",
           date: formattedDate || new Date().toISOString().split("T")[0],
           uploadedFile: null,
+          parentFolderId: parentFolderId,
         };
 
         console.log("Populated form:", updatedForm);
         setForm(updatedForm);
         initialFormState.current = updatedForm;
+
         if (
           window.integrateFile &&
           typeof window.integrateFile === "function"
@@ -141,6 +192,7 @@ const MySpaceForm = () => {
             documentData,
           );
         }
+
         showToast({
           message: `Editing: ${documentData.fileName || documentData.name}`,
           type: "info",
@@ -158,7 +210,7 @@ const MySpaceForm = () => {
         setIsLoading(false);
       }
     }
-  }, [isEditMode, documentData]);
+  }, [isEditMode, documentData, parentFolderId]);
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -218,80 +270,6 @@ const MySpaceForm = () => {
     };
   }, [isDirty, isSubmitting]);
 
-  // useEffect(() => {
-  //   window.updateDocMetaField = (name, value) => {
-  //     console.log("updateDocMetaField called:", {
-  //       name,
-  //       value,
-  //       type: typeof value,
-  //     });
-
-  //     if (name === "file") {
-  //       if (value instanceof Blob || value instanceof File) {
-  //         const fileName = value.name || "scanned_document.tiff";
-  //         const file = new File([value], fileName, {
-  //           type: value.type || "image/tiff",
-  //           lastModified: Date.now(),
-  //         });
-
-  //         setForm((prev) => ({
-  //           ...prev,
-  //           uploadedFile: file,
-  //           fileName: prev.fileName || fileName.replace(/\.[^/.]+$/, ""),
-  //         }));
-
-  //         setErrors((prev) => ({ ...prev, file: "" }));
-
-  //         showToast({
-  //           message: `File loaded: ${fileName}`,
-  //           type: "success",
-  //           title: "File Loaded",
-  //           autoClose: 2000,
-  //         });
-  //       } else {
-  //         handleManualUpdate(name, value);
-  //       }
-  //     } else {
-  //       handleManualUpdate(name, value);
-  //     }
-
-  //     const element = docMetaRefs.current[name];
-  //     if (element && element.type !== "file") {
-  //       element.value = value || "";
-  //     }
-  //   };
-
-  //   window.updateDocMetaFieldDelete = (name, value) => {
-  //     console.log("updateDocMetaFieldDelete called:", { name, value });
-
-  //     if (name === "file") {
-  //       setForm((prev) => ({
-  //         ...prev,
-  //         uploadedFile: null,
-  //       }));
-
-  //       showToast({
-  //         message: "File removed",
-  //         type: "info",
-  //         title: "File Removed",
-  //         autoClose: 1500,
-  //       });
-  //     } else {
-  //       handleManualUpdate(name, value);
-  //     }
-
-  //     const element = docMetaRefs.current[name];
-  //     if (element && element.type !== "file") {
-  //       element.value = value || "";
-  //     }
-  //   };
-
-  //   return () => {
-  //     window.updateDocMetaField = undefined;
-  //     window.updateDocMetaFieldDelete = undefined;
-  //     window.importFromHDD = undefined;
-  //   };
-  // }, [handleManualUpdate]);
   useEffect(() => {
     window.updateDocMetaField = (name, value) => {
       console.log("updateDocMetaField called:", {
@@ -424,52 +402,6 @@ const MySpaceForm = () => {
     setScanModalOpen(false);
   };
 
-  // const prepareSubmitFormData = () => {
-  //   const metadataArray = [
-  //     {
-  //       docType: form.docType || "",
-  //       category: form.cateType || "",
-  //       tags: form.tagsType || "",
-  //       classification: form.classType || "",
-  //       keyword: form.keyword || "",
-  //       fileName: form.fileName || "",
-  //       fileTitle: form.fileTitle || "",
-  //       date: form.date || "",
-  //       decision: form.decision || "",
-  //     },
-  //   ];
-
-  //   const submitData = {
-  //     title: form.fileTitle || form.fileName || "Untitled",
-  //     description: JSON.stringify(metadataArray),
-  //     fileName: form.fileName || "",
-  //     datePublished: form.date
-  //       ? new Date(form.date).toISOString()
-  //       : new Date().toISOString(),
-
-  //     ...(form.dateExpired && {
-  //       dateExpired: new Date(form.dateExpired).toISOString(),
-  //     }),
-
-  //     file: form.uploadedFile || null,
-
-  //     keywords: [],
-  //   };
-
-  //   if (form.keyword && form.keyword.trim()) {
-  //     if (form.keyword.includes(",")) {
-  //       submitData.keywords = form.keyword
-  //         .split(",")
-  //         .map((k) => k.trim())
-  //         .filter((k) => k);
-  //     } else {
-  //       submitData.keywords = [form.keyword.trim()];
-  //     }
-  //   }
-
-  //   return submitData;
-  // };
-
   const prepareSubmitFormData = () => {
     const metadataArray = [
       {
@@ -485,7 +417,6 @@ const MySpaceForm = () => {
       },
     ];
 
-    // Ensure filename has .tif extension if file is present
     let fileName = form.fileName || "";
     if (
       form.uploadedFile &&
@@ -525,6 +456,7 @@ const MySpaceForm = () => {
 
     return submitData;
   };
+
   const handleSubmit = async () => {
     try {
       const validation = validateForm(true);
@@ -543,13 +475,7 @@ const MySpaceForm = () => {
       const submitData = prepareSubmitFormData();
       console.log("submitData", submitData);
 
-      let folderIdToUse = "";
-
-      if (isEditMode) {
-        folderIdToUse = parentFolderId || "";
-      } else {
-        folderIdToUse = parentFolderId || "";
-      }
+      let folderIdToUse = parentFolderId || "";
 
       const externalReferenceCode = isEditMode
         ? documentData?.externalReferenceCode
@@ -571,9 +497,15 @@ const MySpaceForm = () => {
         title: "Success",
       });
 
+      // Clear sessionStorage after successful submission
+      sessionStorage.removeItem("parentFolderId");
+      sessionStorage.removeItem("folderId");
+      sessionStorage.removeItem("isEditMode");
+      sessionStorage.removeItem("editDocumentData");
+
       setTimeout(() => {
-        navigate("/myspace");
-      }, 1500);
+        window.location.href = "/web/vdms//my-space";
+      }, 1000);
     } catch (error) {
       console.error("Submit error:", error);
       showToast({
@@ -640,7 +572,7 @@ const MySpaceForm = () => {
             color: "white",
             borderColor: "#0066B3",
           }}
-          onClick={() => navigate("/myspace")}
+          onClick={() => (window.location.href = "/web/vdms/my-space")}
         >
           BACK
         </button>
